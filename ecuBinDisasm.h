@@ -5,10 +5,10 @@
 #define SUB_OP_NUM 41
 #define SYM_BUF_MAX 128
 #define OP_SYMBOLS_MAX 3
-#define ORG_MAX 3
+#define ORG_MAX 4
 
-#define BIN_FILE "standard_E932_E931_source.obj"
-#define SYM_FILE "e931.sym"
+#define BIN_FILE "standard_E932_E931_source.obj" //"DSM_NA_EB20.bin"
+#define SYM_FILE "e931.sym" //"eb20.sym"
 
 typedef unsigned char  byte;
 typedef unsigned short word;
@@ -159,7 +159,7 @@ uint loadEcuBinFile() {
   ecuBin = fopen(BIN_FILE, "rb");
 
   if(ecuBin == NULL) {
-    fputs("File error", stderr);
+    fputs("\nFile error\n", stderr);
     exit(1);
   }
 
@@ -172,7 +172,7 @@ uint loadEcuBinFile() {
   binBuffer = (byte*)malloc(sizeof(byte) * binSize);
 
   if(binBuffer == NULL) {
-    fputs("Memory error", stderr);
+    fputs("\nMemory error\n", stderr);
     fclose(ecuBin);
     exit(2);
   }
@@ -181,7 +181,7 @@ uint loadEcuBinFile() {
   bytesRead = fread(binBuffer, 1, binSize, ecuBin);
 
   if(bytesRead != binSize) {
-    fputs("Reading error", stderr);
+    fputs("\nReading error\n", stderr);
     fclose(ecuBin);
     exit(3);
   }
@@ -200,7 +200,7 @@ uint loadSymbolFile() {
   symFile = fopen(SYM_FILE, "r");
 
   if(symFile == NULL) {
-    fputs("File error", stderr);
+    fputs("\nFile error\n", stderr);
     exit(1);
   }
 
@@ -448,12 +448,10 @@ void subOpPrint(char* symbol, opUnion oper, byte* buffPtr, bool isSymbol) {
       printf(formats[(int)currSubOp.type], buffPtr[2]);
     break;
     case 4:
-      if(isSymbol){
-        if(IMMEDIATE16 == currSubOp.type) {
-          printf("#%s", symbol);
-        } else {
-          printf(formats[(int)currSubOp.type], buffPtr[2], buffPtr[3]);
-        }
+      if(IMMEDIATE16 == currSubOp.type && isSymbol) {
+        printf("#%s", symbol);
+      } else {
+        printf(formats[(int)currSubOp.type], buffPtr[2], buffPtr[3]);
       }
     break;
   };
@@ -492,7 +490,7 @@ void  opPrint(char* symbol, opUnion oper, byte* buffPtr, bool isSymbol, word bin
         opSymbols[0]      = getSymbol(opSymbolsBytes[0]);
         opSymbols[1]      = getSymbol(opSymbolsBytes[1]); // Relative
 
-        if('\0' != opSymbols[0]) {
+        if('\0' != opSymbols[0][0]) {
           printf("%s, #$%02x, %s", opSymbols[0], buffPtr[2], opSymbols[1]);
         } else {
           printf("$%02x, #$%02x, %s", buffPtr[1], buffPtr[2], opSymbols[1]);

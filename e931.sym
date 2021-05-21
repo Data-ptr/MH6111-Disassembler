@@ -1,5 +1,6 @@
 org	8000
 org	ceff
+org	d000
 org	ffe0
 code	0000		p1_ddr
 code	0001		p2_ddr
@@ -1345,7 +1346,7 @@ code	fafc		L1974
 code	fb04		L1975
 code	fb09		L1976
 code	fb0c		L1977
-data  fb0f
+data	fb0f
 data	fb22		t_strap1
 data	fb2a		t_strap2
 data	fb32		t_strap3

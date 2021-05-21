@@ -16,7 +16,7 @@ operation opTable[OP_TABLE_SZ] = {
   {"tba",     1, IMPLIED,   0, 0}, {"xgxy",    1, IMPLIED,     0, 0},
   {"daa",     1, IMPLIED,   0, 0}, {"xgdx",    1, IMPLIED,     0, 0},
   {"aba",     1, IMPLIED,   0, 0}, {"cpd",     3, IMMEDIATE16, 0, 0},
-  {"cpd",     2, DIRECT,    0, 0}, {"0x1e",    0, IMPLIED,     0, 0},
+  {"cmpd1",   2, DIRECT,    0, 0}, {"0x1e",    0, IMPLIED,     0, 0},
   {"cpd",     3, EXTENDED,  0, 0},   //0x1f
 
   {"bra",     2, RELATIVE,  0, 0},   //0x20
@@ -81,7 +81,7 @@ operation opTable[OP_TABLE_SZ] = {
 
   {"suba",    2, IMMEDIATE, 0, 0},   //0x80
   {"cmpa",    2, IMMEDIATE, 0, 0}, {"sbca",    2, IMMEDIATE,   0, 0},
-  {"subd",    3, IMMEDIATE, 0, 0}, {"anda",    2, IMMEDIATE,   0, 0},
+  {"subd",    3, IMMEDIATE16, 0, 0}, {"anda",    2, IMMEDIATE,   0, 0},
   {"bita",    2, IMMEDIATE, 0, 0}, {"ldaa",    2, IMMEDIATE,   0, 0},
   {"brset",   4, DIRECT3,   0, 0}, {"eora",    2, IMMEDIATE,   0, 0},
   {"adca",    2, IMMEDIATE, 0, 0}, {"oraa",    2, IMMEDIATE,   0, 0},
