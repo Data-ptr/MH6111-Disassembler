@@ -6,6 +6,7 @@
 #define SYM_BUF_MAX 128
 #define OP_SYMBOLS_MAX 3
 #define ORG_MAX 4
+#define RAS_MAX 50
 
 #define BIN_FILE "DSM_NA_EB20.bin" //"standard_E932_E931_source.obj"
 #define SYM_FILE "eb20.sym"  //"e931.sym"
@@ -100,18 +101,7 @@ uint generatedLabel = 4002;
 
 uint numSymbols = 0;
 
-romAreaStruct ras[500] = {
-  // {0xceff, CODE},
-  // {0xcf02, DATA},
-  // {0xd03e, CODE},
-  // {0xe523, DATA},
-  // {0xE56D, CODE},
-  // {0xE852, DATA},
-  // {0xE861, CODE},
-  // {0xF60F, DATA},
-  // {0xF613, CODE},
-  // {0xFB0F, DATA}
-};
+romAreaStruct ras[RAS_MAX] = {0};
 
 word orgTable[ORG_MAX];
 
@@ -138,8 +128,8 @@ void    printOp(word binCurrPos, opUnion oper, byte* buffPtr, bool lineNumbers, 
 void    subOpPrint(char* symbol, opUnion oper, byte* buffPtr, bool isSymbol);
 void    opPrint(char* symbol, opUnion oper, byte* buffPtr, bool isSymbol, word binCurrPos);
 
-ROMArea getRomArea(word binCurrPos, ROMArea ra);
-void    updateRomArea(byte* buffPtr, ROMArea* ra);
+ROMArea getRomArea(word binCurrPos, ROMArea ra, bool reset);
+void    updateRomArea(byte* buffPtr, ROMArea* ra, bool reset);
 uint    bytesToNextSection(byte* buffPtr);
 byte*   printData(word binCurrPos, byte* buffPtr, bool LineNumbers, bool rawBytes);
 uint    bytesToNextLabel(byte* buffPtr);
@@ -332,6 +322,8 @@ bool addSymbol(word address, ROMArea ra, char* symbol) {
     memcpy(tempSymbolTable, symbolTable, sizeof(symbolStruct) * numSymbols);
     free(symbolTable);
   }
+
+  //printf("\nAdding symbol: %-10s, at line: %04x\n", symbol, address);
 
   tempSymbolTable[numSymbols].addr  = address;
   tempSymbolTable[numSymbols].area = ra;
@@ -526,16 +518,16 @@ void sortSymbols() {
   qsort(symbolTable, numSymbols, sizeof(symbolStruct), cmpSymbols);
 }
 
-void updateRomArea(byte* buffPtr, ROMArea* ra) {
-  word binCurrPos = ROM_START + (int)(buffPtr - binBuffer);
-  *ra = getRomArea(binCurrPos, *ra);
+void updateRomArea(byte* buffPtr, ROMArea* ra, bool reset) {
+  word binCurrPos = getBinPos(buffPtr);
+  *ra = getRomArea(binCurrPos, *ra, reset);
 }
 
 uint bytesToNextSection(byte* buffPtr) {
   uint ret = 0;
-  word binCurrPos = ROM_START + (int)(buffPtr - binBuffer);
+  word binCurrPos = getBinPos(buffPtr);
 
-  for(int i = 0; i < 11; i++) {
+  for(int i = 0; i < RAS_MAX; i++) {
     if(binCurrPos > ras[i].address) {
       continue;
     } else {
@@ -544,12 +536,16 @@ uint bytesToNextSection(byte* buffPtr) {
     }
   }
 
+  if(0 == ret) {
+    ret = bytesToNextSection(buffPtr + 1);
+  }
+
   return ret;
 }
 
 uint bytesToNextLabel(byte* buffPtr) {
   uint ret = 0;
-  word binCurrPos = ROM_START + (int)(buffPtr - binBuffer);
+  word binCurrPos = getBinPos(buffPtr);
 
   for(int i = 0; i < numSymbols; i++) {
     if(binCurrPos > symbolTable[i].addr) {
@@ -569,8 +565,12 @@ uint bytesToNextLabel(byte* buffPtr) {
   return ret;
 }
 
-ROMArea getRomArea(word binCurrPos, ROMArea ra) {
+ROMArea getRomArea(word binCurrPos, ROMArea ra, bool reset) {
   static int i = 0;
+
+  if(reset) {
+    i = 0;
+  }
 
   if(binCurrPos == ras[i].address) {
     //printf("ROM Area: %s\n", CODE == ras[i].area ? "CODE" : "DATA");

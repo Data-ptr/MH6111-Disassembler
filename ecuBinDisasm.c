@@ -26,6 +26,7 @@ int main () {
 
   printf("%-17s .msfirst\n", "");
 
+  // Since symbols in the RAM area aren't generated, they were loaded in file
   printRamVariables(lineNumbers);
 
   // Use soDefs to add multi-byte operations into the operations table (opTable)
@@ -39,19 +40,6 @@ int main () {
   // Point to start of buffer
   buffPtr = binBuffer;
 
-  // Count 0xFF and find entryPoint
-  while((byte)0xFF == *buffPtr) {
-    buffPtr++;
-  }
-
-  // BuffPtr should point to the reset entryPoint
-  entryPoint = buffPtr;
-
-  binCurrPos = getBinPos(buffPtr);
-
-  // Follow the jump for fun
-  codeStart  = buffPtr = binBuffer + (decodeOpAndJump(binCurrPos, buffPtr) - ROM_START);
-
   // Scan for RELATIVE ops to build symbol table
   while(
     buffPtr < binBuffer + bytesRead &&
@@ -60,11 +48,21 @@ int main () {
     binCurrPos = getBinPos(buffPtr);
 
     lastBuffPtr = buffPtr;
+    updateRomArea(buffPtr, &ra, 0);
+
+    if(CODE != ra) {
+       buffPtr += bytesToNextSection(buffPtr);
+       continue;
+    }
+
     buffPtr = decodeOp(binCurrPos, buffPtr, SCAN, 0, 0);
   }
 
   // Reset pointer
   buffPtr = binBuffer;
+
+  // Reset ROM Area started
+  updateRomArea(buffPtr, &ra, 1);
 
   // Main loop
   while(
@@ -74,7 +72,7 @@ int main () {
     binCurrPos = getBinPos(buffPtr);
 
     lastBuffPtr = buffPtr;
-    updateRomArea(buffPtr, &ra);
+    updateRomArea(buffPtr, &ra, 0);
 
     if(lineNumbers) {
       printf("%04X ", binCurrPos);
@@ -165,7 +163,7 @@ byte* printData(word binCurrPos, byte* buffPtr, bool lineNumbers, bool rawBytes)
   }
 
   // If there are at least 4 bytes to print, and maybe we are on a label
-  if((btns >= 4 || 0 == btns) && btnl >= 4 && binCurrPos + 4 < 0xFFFF) {
+  if(btns >= 4 && btnl >= 4 && binCurrPos + 4 < 0xFFFF) {
     // Code for .fill directive
     if((byte)0xFF == *buffPtr && (byte)0xFF == buffPtr[1]) { //If at least 2-bytes
       uint numFFs = 0;
@@ -225,10 +223,6 @@ byte* printData(word binCurrPos, byte* buffPtr, bool lineNumbers, bool rawBytes)
 
   return buffPtr;
 }
-
-// byte* printVectorTable(word binCurrPos, byte* buffPtr, bool lineNumber) {
-//
-// }
 
 byte* decodeOp(word binCurrPos, byte* buffPtr, decodeType dt, bool lineNumbers, bool rawBytes) {
   operation currOp     = opTable[*buffPtr];
