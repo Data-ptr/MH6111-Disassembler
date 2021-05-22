@@ -14,7 +14,8 @@ int main () {
   byte*   codeStart;
 
   word binCurrPos = 0;
-  bool lineNumbers = 0;
+  bool lineNumbers = 1;
+  bool rawBytes = 1;
 
   // Load symbols from file
   loadSymbolFile();
@@ -59,7 +60,7 @@ int main () {
     binCurrPos = getBinPos(buffPtr);
 
     lastBuffPtr = buffPtr;
-    buffPtr = decodeOp(binCurrPos, buffPtr, SCAN, 0);
+    buffPtr = decodeOp(binCurrPos, buffPtr, SCAN, 0, 0);
   }
 
   // Reset pointer
@@ -75,10 +76,14 @@ int main () {
     lastBuffPtr = buffPtr;
     updateRomArea(buffPtr, &ra);
 
+    if(lineNumbers) {
+      printf("%04X ", binCurrPos);
+    }
+
     if(DATA == ra || VECTOR == ra) {
-      buffPtr = printData(binCurrPos, buffPtr, lineNumbers);
+      buffPtr = printData(binCurrPos, buffPtr, lineNumbers, rawBytes);
     } else if(CODE == ra) {
-      buffPtr = decodeOp(binCurrPos, buffPtr, PRINT, lineNumbers);
+      buffPtr = decodeOp(binCurrPos, buffPtr, PRINT, lineNumbers, rawBytes);
     }
   }
 
@@ -87,7 +92,7 @@ int main () {
     printf("%05X ",  0x10000);
   }
 
-  printf("%-17s .end\n", "");
+  printf("          %-17s .end\n", "");
 
   // Clean up
   free(binBuffer);
@@ -120,26 +125,37 @@ void buildRomAreaStruct() {
   }
 }
 
-byte* printData(word binCurrPos, byte* buffPtr, bool lineNumber) {
+void printRaw(byte* buffPtr, uint numBytes) {
+  // Print raw bytes
+  for(int i = 0; i < 4; i++) {
+    if(i < numBytes) {
+      printf("%02X ", *(buffPtr + i));
+    } else {
+      printf("   ");
+    }
+  }
+}
+
+byte* printData(word binCurrPos, byte* buffPtr, bool lineNumbers, bool rawBytes) {
   char* symbol = getSymbol(binCurrPos);
   uint btns = bytesToNextSection(buffPtr);
   uint btnl = bytesToNextLabel(buffPtr);
-
-  doOrg(binCurrPos, &symbol, lineNumber);
-
-  if(lineNumber) {
-    printf("%04X ", binCurrPos);
-  }
 
   if(VECTOR == ra) {
     word      vecBytes   = (buffPtr[0] << 8) + buffPtr[1];
     char*     vecSymbol  = getSymbol(vecBytes);
 
+    doOrg(binCurrPos, &symbol, lineNumbers);
+
+    if(rawBytes) {
+      printRaw(buffPtr, 2);
+    }
+
     //if((btns >= 2 || 0 == btns) && btnl >= 2 && binCurrPos + 2 < 0x10000) {
     if('\0' != vecSymbol[0]) {
-      printf("%-17s .word %s\n", symbol, vecSymbol);
+      printf("%-17s%-8s%s\n", symbol, ".word", vecSymbol);
     } else {
-      printf("%-17s .word $%04x\n", symbol, vecBytes);
+      printf("%-17s%-8s$%04x\n", symbol, ".word", vecBytes);
     }
 
     buffPtr += 2;
@@ -159,12 +175,22 @@ byte* printData(word binCurrPos, byte* buffPtr, bool lineNumber) {
         buffPtr++;
       }
 
-      printf("%-17s .fill\t%d, $FF\n", symbol, numFFs);
+      //printRaw(buffPtr, 4);
+      doOrg(binCurrPos, &symbol, lineNumbers);
+
+      printf("            %-17s%-8s%d, $FF\n", symbol, ".fill", numFFs);
     } else {
+      if(rawBytes) {
+        printRaw(buffPtr, 4);
+      }
+
+      doOrg(binCurrPos, &symbol, lineNumbers);
+
       // Code for four .byte directive
       printf(
-        "%-17s .byte\t$%02x, $%02x, $%02x, $%02x\n",
+        "%-17s%-8s$%02x, $%02x, $%02x, $%02x\n",
         symbol,
+        ".byte",
         buffPtr[0],
         buffPtr[1],
         buffPtr[2],
@@ -180,7 +206,13 @@ byte* printData(word binCurrPos, byte* buffPtr, bool lineNumber) {
       bytesToPrint = 1;
     }
 
-    printf("%-17s .byte $%02x", symbol, buffPtr[0]);
+    if(rawBytes) {
+      printRaw(buffPtr, bytesToPrint);
+    }
+
+    doOrg(binCurrPos, &symbol, lineNumbers);
+
+    printf("%-17s%-8s$%02x", symbol, ".byte", buffPtr[0]);
 
     for(int i = 1; i < bytesToPrint; i++) {
       printf(", $%02x", buffPtr[i]);
@@ -198,7 +230,7 @@ byte* printData(word binCurrPos, byte* buffPtr, bool lineNumber) {
 //
 // }
 
-byte* decodeOp(word binCurrPos, byte* buffPtr, decodeType dt, bool lineNumber) {
+byte* decodeOp(word binCurrPos, byte* buffPtr, decodeType dt, bool lineNumbers, bool rawBytes) {
   operation currOp     = opTable[*buffPtr];
   subOp     currSubOp;
   uint      isSubOp    = getSubOp(currOp, buffPtr, &currSubOp);
@@ -212,7 +244,7 @@ byte* decodeOp(word binCurrPos, byte* buffPtr, decodeType dt, bool lineNumber) {
       ou.op = currOp;
     }
 
-    printOp(binCurrPos, ou, buffPtr, lineNumber);
+    printOp(binCurrPos, ou, buffPtr, lineNumbers, rawBytes);
 
     printf("\n");
   } else if(SCAN == dt && !isSubOp) {
@@ -244,7 +276,7 @@ void generateRelativeSymbols(word binCurrPos, operation currOp, byte* buffPtr) {
 
     // Make up a label
     if('\0' == symbol[0]) {
-      symbol = (char*)malloc(sizeof(char) * 5);
+      symbol = (char*)malloc(sizeof(char) * 6);
       // Make up a label for the symbol
       sprintf(symbol, "L%i", generatedLabel++);
       // Add the made up symbol to the symbol list
@@ -257,7 +289,7 @@ void generateRelativeSymbols(word binCurrPos, operation currOp, byte* buffPtr) {
 
     // Make up a label
     if('\0' == symbol[0]) {
-      symbol = (char*)malloc(sizeof(char) * 5);
+      symbol = (char*)malloc(sizeof(char) * 6);
       // Make up a label for the symbol
       sprintf(symbol, "L%i", generatedLabel++);
       // Add the made up symbol to the symbol list

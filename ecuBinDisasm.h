@@ -7,8 +7,8 @@
 #define OP_SYMBOLS_MAX 3
 #define ORG_MAX 4
 
-#define BIN_FILE "standard_E932_E931_source.obj" //"DSM_NA_EB20.bin"
-#define SYM_FILE "e931.sym" //"eb20.sym"
+#define BIN_FILE "DSM_NA_EB20.bin" //"standard_E932_E931_source.obj"
+#define SYM_FILE "eb20.sym"  //"e931.sym"
 
 typedef unsigned char  byte;
 typedef unsigned short word;
@@ -96,11 +96,11 @@ byte* binBuffer;
 byte symBuffer[SYM_BUF_MAX];
 
 // Used for generated labels (RELATIVE for now)
-uint generatedLabel = 4001;
+uint generatedLabel = 4002;
 
 uint numSymbols = 0;
 
-romAreaStruct ras[50] = {
+romAreaStruct ras[500] = {
   // {0xceff, CODE},
   // {0xcf02, DATA},
   // {0xd03e, CODE},
@@ -133,21 +133,22 @@ bool    getSubOp(operation currOp, byte* buffPtr, subOp* currSubOp);
 uint    freeSubOps();
 
 word    decodeOpAndJump(word binCurrPos, byte * buffPtr);
-byte*   decodeOp(word binCurrPos, byte * buffPtr, decodeType dt, bool lineNumber);
-void    printOp(word binCurrPos, opUnion oper, byte* buffPtr, bool lineNumber);
+byte*   decodeOp(word binCurrPos, byte * buffPtr, decodeType dt, bool lineNumbers, bool rawBytes);
+void    printOp(word binCurrPos, opUnion oper, byte* buffPtr, bool lineNumbers, bool rawBytes);
 void    subOpPrint(char* symbol, opUnion oper, byte* buffPtr, bool isSymbol);
 void    opPrint(char* symbol, opUnion oper, byte* buffPtr, bool isSymbol, word binCurrPos);
 
 ROMArea getRomArea(word binCurrPos, ROMArea ra);
 void    updateRomArea(byte* buffPtr, ROMArea* ra);
 uint    bytesToNextSection(byte* buffPtr);
-byte*   printData(word binCurrPos, byte* buffPtr, bool lineNumber);
+byte*   printData(word binCurrPos, byte* buffPtr, bool LineNumbers, bool rawBytes);
 uint    bytesToNextLabel(byte* buffPtr);
 void    sortSymbols();
 word    getBinPos(byte* buffPtr);
 void    printRamVariables(bool lineNumber);
 void    addOrg(word address);
-void    doOrg(word binCurrPos, char** symbol, bool lineNumber);
+void    doOrg(word binCurrPos, char** symbol, bool lineNumbers);
+void    printRaw(byte* buffPtr, uint numBytes);
 
 void buildRomAreaStruct();
 
@@ -244,15 +245,17 @@ void addOrg(word address) {
   orgTable[i++] = address;
 }
 
-void doOrg(word binCurrPos, char** symbol, bool lineNumber) {
+void doOrg(word binCurrPos, char** symbol, bool lineNumbers) {
   // Origin (.org)
   for(int i = 0; i < ORG_MAX; i++) {
     if(orgTable[i] == binCurrPos) {
-      if(lineNumber) {
+      // `.org`s should come firt with a label
+      printf("            %-17s%-8s$%04x\n", *symbol, ".org", binCurrPos);
+
+      if(lineNumbers) {
         printf("%04X ", binCurrPos);
       }
-      // `.org`s should come firt with a label
-      printf("%-17s .org\t$%04x\n", *symbol, binCurrPos);
+
       // Clear the label for the rest of this binCurrPos
       *symbol = "\0";
     }
@@ -364,26 +367,27 @@ void printSymbols() {
 void printRamVariables(bool lineNumber) {
   for(int i=0; ROM_START > symbolTable[i].addr; i++) {
     if(lineNumber){
-      printf("0000 ");
+      printf("0000");
     }
 
-    printf("%-17s\t.EQU\t\t$%04x\n", symbolTable[i].label, symbolTable[i].addr);
+    printf("    %-17s%-8s$%04x\n", symbolTable[i].label, ".equ", symbolTable[i].addr);
   }
 }
 
 //
 // Print ops
 //
-void printOp(word binCurrPos, opUnion oper, byte* buffPtr, bool lineNumber) {
+void printOp(word binCurrPos, opUnion oper, byte* buffPtr, bool lineNumbers, bool rawBytes) {
   char* symbol = getSymbol(binCurrPos);
 
-  doOrg(binCurrPos, &symbol, lineNumber);
+  doOrg(binCurrPos, &symbol, lineNumbers);
 
-  if(lineNumber){
-    printf("%X %-17s %s\t", binCurrPos, symbol, oper.op.mnemonic);
-  } else {
-    printf("%-17s %s\t", symbol, oper.op.mnemonic);
+  if(rawBytes) {
+    printRaw(buffPtr, oper.op.numBytes);
   }
+
+  // Print label and mnemonic
+  printf("%-17s%-8s", symbol, oper.op.mnemonic);
 
   // Operation symbols are processed in here
   if(IMPLIED != oper.op.type) { // No bytes or symbols, just skip
@@ -490,10 +494,12 @@ void  opPrint(char* symbol, opUnion oper, byte* buffPtr, bool isSymbol, word bin
         opSymbols[0]      = getSymbol(opSymbolsBytes[0]);
         opSymbols[1]      = getSymbol(opSymbolsBytes[1]); // Relative
 
-        if('\0' != opSymbols[0][0]) {
+        if('\0' != opSymbols[0][0] && '\0' != opSymbols[1][0]) {
           printf("%s, #$%02x, %s", opSymbols[0], buffPtr[2], opSymbols[1]);
-        } else {
+        } else if('\0' != opSymbols[1][0]) {
           printf("$%02x, #$%02x, %s", buffPtr[1], buffPtr[2], opSymbols[1]);
+        } else {
+          printf("$%02x, #$%02x, $%02x", buffPtr[1], buffPtr[2], buffPtr[3]);
         }
       } else if(DIRECT4 == currOp.type){
         opSymbolsBytes[1] = binCurrPos + (char)buffPtr[3] + 0x0004;
