@@ -97,7 +97,7 @@ byte* binBuffer;
 byte symBuffer[SYM_BUF_MAX];
 
 // Used for generated labels (RELATIVE for now)
-uint generatedLabel = 4002;
+uint generatedLabel = 4003;
 
 uint numSymbols = 0;
 
@@ -113,7 +113,7 @@ uint    loadEcuBinFile();
 
 uint    loadSymbolFile();
 bool    addSymbol(word address, ROMArea ra, char* symbol);
-void    generateRelativeSymbols(word binCurrPos, operation currOp, byte* buffPtr);
+void    generateRelativeSymbols(word binCurrPos, opUnion ou, byte* buffPtr, bool isSubOp);
 char*   getSymbol(word address);
 word    getOpSymbol(word binCurrPos, opUnion op, byte* buffPtr, bool* chkFlg);
 void    printSymbols();

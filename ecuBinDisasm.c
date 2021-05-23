@@ -58,6 +58,9 @@ int main () {
     buffPtr = decodeOp(binCurrPos, buffPtr, SCAN, 0, 0);
   }
 
+  // Sort things again
+  sortSymbols();
+
   // Reset pointer
   buffPtr = binBuffer;
 
@@ -228,21 +231,20 @@ byte* decodeOp(word binCurrPos, byte* buffPtr, decodeType dt, bool lineNumbers, 
   operation currOp     = opTable[*buffPtr];
   subOp     currSubOp;
   uint      isSubOp    = getSubOp(currOp, buffPtr, &currSubOp);
+  opUnion   ou;
+
+  if(isSubOp) {
+    ou.subOp = currSubOp;
+  } else {
+    ou.op = currOp;
+  }
 
   if(PRINT == dt){
-    opUnion ou;
-
-    if(isSubOp) {
-      ou.subOp = currSubOp;
-    } else {
-      ou.op = currOp;
-    }
-
     printOp(binCurrPos, ou, buffPtr, lineNumbers, rawBytes);
 
     printf("\n");
-  } else if(SCAN == dt && !isSubOp) {
-    generateRelativeSymbols(binCurrPos, currOp, buffPtr);
+  } else if(SCAN == dt) {
+    generateRelativeSymbols(binCurrPos, ou, buffPtr, isSubOp);
   }
 
   return buffPtr + (isSubOp ? currSubOp.numBytes : currOp.numBytes);
@@ -262,32 +264,75 @@ word decodeOpAndJump(word binCurrPos, byte * buffPtr) {
   return opBytes;
 }
 
-void generateRelativeSymbols(word binCurrPos, operation currOp, byte* buffPtr) {
-  if(RELATIVE == currOp.type) { // Calculate RELATIVE address
-    // Signed char for two's compliment
-    word  opWord    = binCurrPos + (char)buffPtr[1] + 0x0002;
-    char* symbol    = getSymbol(opWord);
+void generateRelativeSymbols(word binCurrPos, opUnion ou, byte* buffPtr, bool isSubOp) {
+  operation currOp;
+  subOp     currSubOp;
 
-    // Make up a label
-    if('\0' == symbol[0]) {
-      symbol = (char*)malloc(sizeof(char) * 6);
-      // Make up a label for the symbol
-      sprintf(symbol, "L%i", generatedLabel++);
-      // Add the made up symbol to the symbol list
-      addSymbol(opWord, CODE, symbol);
+  if(isSubOp) {
+    currSubOp = ou.subOp;
+  } else {
+    currOp = ou.op;
+  }
+
+  if(isSubOp) {
+    if(IMMEDIATE16 == currSubOp.type) { // This is actually a jump?
+      word  opWord    = (buffPtr[2] << 8) + buffPtr[3];
+
+      if(0x8000 < opWord) {
+        char* symbol    = getSymbol(opWord);
+
+        // Make up a label
+        if('\0' == symbol[0]) {
+          symbol = (char*)malloc(sizeof(char) * 6);
+          // Make up a label for the symbol
+          sprintf(symbol, "T%i", generatedLabel++);
+          // Add the made up symbol to the symbol list
+          addSymbol(opWord, DATA, symbol);
+        }
+      }
     }
-  } else if(DIRECT3 == currOp.type) {
-    // Signed char for two's compliment
-    word  opWord    = binCurrPos + (char)buffPtr[3] + 0x0004;
-    char* symbol    = getSymbol(opWord);
+  } else {
+    if(RELATIVE == currOp.type) { // Calculate RELATIVE address
+      // Signed char for two's compliment
+      word  opWord    = binCurrPos + (char)buffPtr[1] + 0x0002;
+      char* symbol    = getSymbol(opWord);
 
-    // Make up a label
-    if('\0' == symbol[0]) {
-      symbol = (char*)malloc(sizeof(char) * 6);
-      // Make up a label for the symbol
-      sprintf(symbol, "L%i", generatedLabel++);
-      // Add the made up symbol to the symbol list
-      addSymbol(opWord, CODE, symbol);
+      // Make up a label
+      if('\0' == symbol[0]) {
+        symbol = (char*)malloc(sizeof(char) * 6);
+        // Make up a label for the symbol
+        sprintf(symbol, "L%i", generatedLabel++);
+        // Add the made up symbol to the symbol list
+        addSymbol(opWord, CODE, symbol);
+      }
+    } else if(DIRECT3 == currOp.type) {
+      // Signed char for two's compliment
+      word  opWord    = binCurrPos + (char)buffPtr[3] + 0x0004;
+      char* symbol    = getSymbol(opWord);
+
+      // Make up a label
+      if('\0' == symbol[0]) {
+        symbol = (char*)malloc(sizeof(char) * 6);
+        // Make up a label for the symbol
+        sprintf(symbol, "L%i", generatedLabel++);
+        // Add the made up symbol to the symbol list
+        addSymbol(opWord, CODE, symbol);
+      }
+    } else if(IMMEDIATE16 == currOp.type) {
+      word  opWord    = (buffPtr[1] << 8) + buffPtr[2];
+
+      if(0x8000 < opWord) {
+        char* symbol    = getSymbol(opWord);
+
+        // Make up a label
+        if('\0' == symbol[0]) {
+          symbol = (char*)malloc(sizeof(char) * 6);
+          // Make up a label for the symbol
+          sprintf(symbol, "T%i", generatedLabel++);
+          // Add the made up symbol to the symbol list
+          addSymbol(opWord, DATA, symbol);
+        }
+      }
     }
   }
 }
