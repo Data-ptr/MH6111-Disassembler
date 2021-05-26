@@ -7,9 +7,11 @@
 #define OP_SYMBOLS_MAX 3
 #define ORG_MAX 4
 #define RAS_MAX 50
+#define RAW_BYTES_PAD "            "
+#define LABEL_PAD -20
 
 #define BIN_FILE "DSM_NA_EB20.bin" //"standard_E932_E931_source.obj"
-#define SYM_FILE "eb20.sym"  //"e931.sym"
+#define SYM_FILE "eb20.sym" //"e931.sym"
 
 typedef unsigned char  byte;
 typedef unsigned short word;
@@ -135,9 +137,9 @@ byte*   printData(word binCurrPos, byte* buffPtr, bool LineNumbers, bool rawByte
 uint    bytesToNextLabel(byte* buffPtr);
 void    sortSymbols();
 word    getBinPos(byte* buffPtr);
-void    printRamVariables(bool lineNumber);
+void    printRamVariables(bool lineNumber, bool rawBytes);
 void    addOrg(word address);
-void    doOrg(word binCurrPos, char** symbol, bool lineNumbers);
+void    doOrg(word binCurrPos, char** symbol, bool lineNumbers, bool rawBytes);
 void    printRaw(byte* buffPtr, uint numBytes);
 
 void buildRomAreaStruct();
@@ -206,18 +208,21 @@ uint loadSymbolFile() {
     char symTypeStr[8]    = {0};
     char symLabelStr[32]  = {0};
 
-    // sSCANf it
-    sscanf((const char*)symBuffer, "%s\t%04x\t\t%s", symTypeStr,
-      (uint*)&symAddress, symLabelStr);
+    // If this line isn't a comment
+    if(';' != symBuffer[0]) {
+      // sSCANf it
+      sscanf((const char*)symBuffer, "%s\t%04x\t\t%s", symTypeStr,
+        (uint*)&symAddress, symLabelStr);
 
-    if(0 == strcmp("code", symTypeStr)) {
-      addSymbol(symAddress, CODE, symLabelStr);
-    } else if(0 == strcmp("data", symTypeStr)) {
-      addSymbol(symAddress, DATA, symLabelStr);
-    } else if(0 == strcmp("org", symTypeStr)) {
-      addOrg(symAddress);
-    } else if(0 == strcmp("vector", symTypeStr)) {
-      addSymbol(symAddress, VECTOR, symLabelStr);
+      if(0 == strcmp("code", symTypeStr) || 0 == strcmp("reg", symTypeStr)) {
+        addSymbol(symAddress, CODE, symLabelStr);
+      } else if(0 == strcmp("data", symTypeStr)) {
+        addSymbol(symAddress, DATA, symLabelStr);
+      } else if(0 == strcmp("org", symTypeStr)) {
+        addOrg(symAddress);
+      } else if(0 == strcmp("vector", symTypeStr)) {
+        addSymbol(symAddress, VECTOR, symLabelStr);
+      }
     }
   }
 
@@ -235,12 +240,18 @@ void addOrg(word address) {
   orgTable[i++] = address;
 }
 
-void doOrg(word binCurrPos, char** symbol, bool lineNumbers) {
+void doOrg(word binCurrPos, char** symbol, bool lineNumbers, bool rawBytes) {
   // Origin (.org)
   for(int i = 0; i < ORG_MAX; i++) {
     if(orgTable[i] == binCurrPos) {
-      // `.org`s should come firt with a label
-      printf("            %-17s%-8s$%04x\n", *symbol, ".org", binCurrPos);
+      if(rawBytes) {
+        printf("            ");
+      }
+      char frmt[16] = "\0";
+      sprintf(frmt, "%%%is%%-8s$%%04x\n", LABEL_PAD);
+      // `.org`s should come first with a label
+      //"%-17s%-8s$%04x\n"
+      printf(frmt, *symbol, ".org", binCurrPos);
 
       if(lineNumbers) {
         printf("%04X ", binCurrPos);
@@ -356,13 +367,20 @@ void printSymbols() {
   }
 }
 
-void printRamVariables(bool lineNumber) {
+void printRamVariables(bool lineNumber, bool rawBytes) {
   for(int i=0; ROM_START > symbolTable[i].addr; i++) {
     if(lineNumber){
-      printf("0000");
+      printf("0000 ");
     }
 
-    printf("    %-17s%-8s$%04x\n", symbolTable[i].label, ".equ", symbolTable[i].addr);
+    if(rawBytes) {
+      printf(RAW_BYTES_PAD);
+    }
+
+    char frmt[17] = "\0";
+    sprintf(frmt, "%%%is%%-8s$%%04x\n", LABEL_PAD);
+//"%LABEL_PADs%-8s$%04x\n"
+    printf(frmt, symbolTable[i].label, ".equ", symbolTable[i].addr);
   }
 }
 
@@ -372,14 +390,16 @@ void printRamVariables(bool lineNumber) {
 void printOp(word binCurrPos, opUnion oper, byte* buffPtr, bool lineNumbers, bool rawBytes) {
   char* symbol = getSymbol(binCurrPos);
 
-  doOrg(binCurrPos, &symbol, lineNumbers);
+  doOrg(binCurrPos, &symbol, lineNumbers, rawBytes);
 
   if(rawBytes) {
     printRaw(buffPtr, oper.op.numBytes);
   }
-
+  char frmt[17] = "\0";
+  sprintf(frmt, "%%%is%%-8s", LABEL_PAD);
   // Print label and mnemonic
-  printf("%-17s%-8s", symbol, oper.op.mnemonic);
+  //"%-17s%-8s"
+  printf(frmt, symbol, oper.op.mnemonic);
 
   // Operation symbols are processed in here
   if(IMPLIED != oper.op.type) { // No bytes or symbols, just skip
@@ -497,8 +517,11 @@ void  opPrint(char* symbol, opUnion oper, byte* buffPtr, bool isSymbol, word bin
         opSymbolsBytes[1] = binCurrPos + (char)buffPtr[3] + 0x0004;
         opSymbols[1]      = getSymbol(opSymbolsBytes[1]); // Relative
 
-        printf(formats[(int)currOp.type], buffPtr[1], buffPtr[2], opSymbols[1]);
-
+        if('\0' != opSymbols[1][0]){
+          printf(formats[(int)currOp.type], buffPtr[1], buffPtr[2], opSymbols[1]);
+        } else {
+          printf("$%04x, x, #$%02x, $%04x", buffPtr[1], buffPtr[2], opSymbolsBytes[1]);
+        }
       } else {
         printf(formats[(int)currOp.type], buffPtr[1], buffPtr[2], buffPtr[3]);
       }
@@ -544,6 +567,7 @@ uint bytesToNextSection(byte* buffPtr) {
 }
 
 uint bytesToNextLabel(byte* buffPtr) {
+  static uint lastWasZero = 0;
   uint ret = 0;
   word binCurrPos = getBinPos(buffPtr);
 
@@ -556,8 +580,12 @@ uint bytesToNextLabel(byte* buffPtr) {
     }
   }
 
-  if(0 == ret) {
-    ret = bytesToNextLabel(buffPtr + 1) + 1;
+  if(0 == ret && 0 == lastWasZero) {
+    lastWasZero = 1;
+    ret = bytesToNextLabel(buffPtr + 1);
+  } else if(0 == ret && 1 == lastWasZero) {
+    lastWasZero = 0;
+    ret = 1;
   }
 
   //printf("Bytes to next label: %i\n", ret);
