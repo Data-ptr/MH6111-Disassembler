@@ -228,6 +228,7 @@ byte* printData(word binCurrPos, byte* buffPtr, bool lineNumbers, bool rawBytes)
     }
   } else { //Brint less than a full 4 bytes
     uint bytesToPrint = btnl;
+    //printf("\nBytes to print: %i\n", bytesToPrint);
 
     if(rawBytes) {
       printRaw(buffPtr, bytesToPrint);
@@ -307,7 +308,7 @@ void generateRelativeSymbols(word binCurrPos, opUnion ou, byte* buffPtr, bool is
       word  opWord    = (buffPtr[2] << 8) + buffPtr[3];
 
 
-      if(0x8000 < opWord) {
+      if(0x8000 < opWord && !inSkipArray(opWord)) {
         char* symbol    = getSymbol(opWord);
 
         // Make up a label
@@ -327,7 +328,7 @@ void generateRelativeSymbols(word binCurrPos, opUnion ou, byte* buffPtr, bool is
       char* symbol    = getSymbol(opWord);
 
       // Make up a label
-      if('\0' == symbol[0]) {
+      if('\0' == symbol[0] && !inSkipArray(opWord)) {
         symbol = (char*)malloc(sizeof(char) * 6);
         // Make up a label for the symbol
         sprintf(symbol, "L%i", generatedLabel++);
@@ -340,7 +341,7 @@ void generateRelativeSymbols(word binCurrPos, opUnion ou, byte* buffPtr, bool is
       char* symbol    = getSymbol(opWord);
 
       // Make up a label
-      if('\0' == symbol[0]) {
+      if('\0' == symbol[0] && !inSkipArray(opWord)) {
         symbol = (char*)malloc(sizeof(char) * 6);
         // Make up a label for the symbol
         sprintf(symbol, "L%i", generatedLabel++);
@@ -351,6 +352,7 @@ void generateRelativeSymbols(word binCurrPos, opUnion ou, byte* buffPtr, bool is
       word  opWord    = (buffPtr[1] << 8) + buffPtr[2];
 
       if(
+        !inSkipArray(opWord) &&
           // 0 != strcmp(currOp.mnemonic, "ldd") &&
           //0 != strcmp(currOp.mnemonic, "ldx") &&
           0xD000 < opWord &&

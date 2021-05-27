@@ -93,6 +93,7 @@ typedef struct {
 #include "operationTables.h"
 
 symbolStruct* symbolTable;
+uint numSymbols = 0;
 
 // Buffer we read the entire binary file into
 byte* binBuffer;
@@ -101,14 +102,16 @@ byte symBuffer[SYM_BUF_MAX];
 // Used for generated labels (RELATIVE for now)
 uint generatedLabel = 4003;
 
-uint numSymbols = 0;
 
 romAreaStruct ras[RAS_MAX] = {0};
+uint rasIndex = 0;
+ROMArea ra = DATA;
 
 word orgTable[ORG_MAX];
 
-ROMArea ra = DATA;
-uint rasIndex = 0;
+word skipArray[ORG_MAX];
+uint skipArrayLen = 0;
+
 
 // Function definitions
 uint    loadEcuBinFile();
@@ -141,6 +144,7 @@ void    printRamVariables(bool lineNumber, bool rawBytes);
 void    addOrg(word address);
 void    doOrg(word binCurrPos, char** symbol, bool lineNumbers, bool rawBytes);
 void    printRaw(byte* buffPtr, uint numBytes);
+bool    inSkipArray(word opWord);
 
 void buildRomAreaStruct();
 
@@ -222,6 +226,8 @@ uint loadSymbolFile() {
         addOrg(symAddress);
       } else if(0 == strcmp("vector", symTypeStr)) {
         addSymbol(symAddress, VECTOR, symLabelStr);
+      } else if(0 == strcmp("skip", symTypeStr)) {
+        skipArray[skipArrayLen++] = symAddress;
       }
     }
   }
@@ -229,6 +235,19 @@ uint loadSymbolFile() {
   fclose(symFile);
 
   return bytesRead;
+}
+
+bool inSkipArray(word opWord) {
+  bool ret = 0;
+
+  for(int i=0; i < skipArrayLen; i++) {
+    if(skipArray[i] == opWord) {
+      ret = 1;
+      break;
+    }
+  }
+
+  return ret;
 }
 
 //
@@ -572,21 +591,21 @@ uint bytesToNextLabel(byte* buffPtr) {
   word binCurrPos = getBinPos(buffPtr);
 
   for(int i = 0; i < numSymbols; i++) {
-    if(binCurrPos > symbolTable[i].addr) {
-      continue;
-    } else {
+    if(binCurrPos < symbolTable[i].addr) {
       ret = symbolTable[i].addr - binCurrPos;
       break;
     }
   }
 
-  if(0 == ret && 0 == lastWasZero) {
-    lastWasZero = 1;
-    ret = bytesToNextLabel(buffPtr + 1);
-  } else if(0 == ret && 1 == lastWasZero) {
-    lastWasZero = 0;
-    ret = 1;
-  }
+  // if(0 == ret) {
+  //   if(lastWasZero) { //We got 0 and the next label was 0 again
+  //     lastWasZero = 0;
+  //     ret = 1;
+  //   } else {
+  //     lastWasZero = 1;
+  //     ret = bytesToNextLabel(buffPtr + 1);
+  //   }
+  // }
 
   //printf("Bytes to next label: %i\n", ret);
 
