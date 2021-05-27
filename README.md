@@ -10,6 +10,16 @@ Disassembler for the Mitsubishi MH6111/Toshiba TMS76C75T.
  -[ ] Disassemble MH2111 code
 </s>
 
+## Compile
+```
+cc ecuBinDisasm.c
+```
+
+## Execute
+```
+./a.out > disassembly.asm
+```
+
 ## Symbol files
 * Format: TYPE\tBYTES\t\t[LABEL]
   - eg.: `code  E4A1    ecuInit`
