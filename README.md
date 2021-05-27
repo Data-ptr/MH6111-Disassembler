@@ -25,7 +25,7 @@ cc ecuBinDisasm.c
   - eg.: `code  E4A1    ecuInit`
 
 ### Types
-* reg - for registers, but only for the sym file, syn: `code`
+* `reg` - for registers, but only for the sym file, syn: `code`
 * `code`
   - process as code, line starting at address BYTES, with LABEL
 * `data`
