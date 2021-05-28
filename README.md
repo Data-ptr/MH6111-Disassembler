@@ -12,12 +12,26 @@ Disassembler for the Mitsubishi MH6111/Toshiba TMS76C75T.
 
 ## Compile
 ```
-cc ecuBinDisasm.c
+cc -largp -o 7675Disassm ecuBinDisasm.c
+```
+
+## Usage
+```
+Usage: 7675Disassm [OPTION...] <BINARY FILE> [SYMBOL FILE]
+Disassembler for the MH6111/TMP76C75T(7675)
+
+  -l, --linenumbers          Print line numbers
+  -r, --rawbytes             Print raw bytes
+  -?, --help                 Give this help list
+      --usage                Give a short usage message
+  -V, --version              Print program version
+
+Report bugs to <janehacker1@gmail.com>
 ```
 
 ## Execute
 ```
-./a.out > disassembly.asm
+./7675Disassm standard_E932_E931_source.obj e931.sym
 ```
 
 ## Symbol files

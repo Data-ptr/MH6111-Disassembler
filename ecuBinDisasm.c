@@ -1,11 +1,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <argp.h>
+#include <stdbool.h>
 
 #include "ecuBinDisasm.h"
 
 // Main function
-int main () {
+int main (int argc, char *argv[]) {
   size_t  bytesRead;
   byte*   buffPtr;
   byte*   lastBuffPtr;
@@ -14,11 +16,19 @@ int main () {
   byte*   codeStart;
 
   word binCurrPos = 0;
-  bool lineNumbers = 0;
-  bool rawBytes = 0;
+
+  //
+  // Argument stuff
+  //
+  struct arguments arguments;
+
+  arguments.lineNumbers = 0;
+  arguments.rawBytes = 0;
+
+  argp_parse(&argp, argc, argv, 0, 0, &arguments);
 
   // Load symbols from file
-  loadSymbolFile();
+  loadSymbolFile(arguments.args[1]);
   sortSymbols();
   //printSymbols();
 
@@ -30,13 +40,13 @@ int main () {
   printf(frmt, "");
 
   // Since symbols in the RAM area aren't generated, they were loaded in file
-  printRamVariables(lineNumbers, rawBytes);
+  printRamVariables(arguments.lineNumbers, arguments.rawBytes);
 
   // Use soDefs to add multi-byte operations into the operations table (opTable)
   addSubOps();
 
   // Load bin file
-  bytesRead = loadEcuBinFile();
+  bytesRead = loadEcuBinFile(arguments.args[0]);
 
   /* the whole file is now loaded in the memory buffer. */
 
@@ -81,23 +91,23 @@ int main () {
     lastBuffPtr = buffPtr;
     updateRomArea(buffPtr, &ra, 0);
 
-    if(lineNumbers) {
+    if(arguments.lineNumbers) {
       printf("%04X ", binCurrPos);
     }
 
     if(DATA == ra || VECTOR == ra) {
-      buffPtr = printData(binCurrPos, buffPtr, lineNumbers, rawBytes);
+      buffPtr = printData(binCurrPos, buffPtr, arguments.lineNumbers, arguments.rawBytes);
     } else if(CODE == ra) {
-      buffPtr = decodeOp(binCurrPos, buffPtr, PRINT, lineNumbers, rawBytes);
+      buffPtr = decodeOp(binCurrPos, buffPtr, PRINT, arguments.lineNumbers, arguments.rawBytes);
     }
   }
 
   // End (.end)
-  if(lineNumbers) {
+  if(arguments.lineNumbers) {
     printf("%05X ",  0x10000);
   }
 
-  if(rawBytes) {
+  if(arguments.rawBytes) {
     printf("            ");
   }
 

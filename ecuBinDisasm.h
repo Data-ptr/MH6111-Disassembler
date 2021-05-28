@@ -10,13 +10,58 @@
 #define RAW_BYTES_PAD "            "
 #define LABEL_PAD -20
 
-#define BIN_FILE "DSM_NA_EB20.bin" //"standard_E932_E931_source.obj"
-#define SYM_FILE "eb20.sym" //"e931.sym"
+//#define BIN_FILE "E771A-32k.bin"
+//#define SYM_FILE "e931.sym"
 
 typedef unsigned char  byte;
 typedef unsigned short word;
 typedef unsigned int   uint;
-typedef unsigned int   bool;
+//typedef unsigned int   bool;
+
+//
+// Argp stuff
+//
+const char *argp_program_version = "7675disassem 0.1";
+const char *argp_program_bug_address = "<janehacker1@gmail.com>";
+static char doc[] = "Disassembler for the MH6111/TMP76C75T(7675)";
+static char args_doc[] = "<BINARY FILE> [SYMBOL FILE]";
+static struct argp_option options[] = {
+    { "linenumbers", 'l', 0, OPTION_ARG_OPTIONAL, "Print line numbers."},
+    { "rawbytes",    'r', 0, OPTION_ARG_OPTIONAL, "Print raw bytes."},
+    { 0 }
+};
+
+struct arguments {
+    bool lineNumbers;
+    bool rawBytes;
+    char *args[2];
+    char *option1;
+};
+
+static error_t parse_opt(int key, char *arg, struct argp_state *state) {
+    struct arguments *arguments = state->input;
+    switch (key) {
+      case 'l': arguments->lineNumbers = 1; break;
+      case 'r': arguments->rawBytes = 1; break;
+      case ARGP_KEY_ARG:
+        // Too many arguments, if your program expects only one argument.
+        if(state->arg_num > 2)
+          argp_usage(state);
+        arguments->args[state->arg_num] = arg;
+      break;
+      case ARGP_KEY_END:
+        // Not enough arguments. if your program expects exactly one argument.
+        if(state->arg_num < 1)
+          argp_usage(state);
+      break;
+      default:
+        return ARGP_ERR_UNKNOWN;
+      break;
+    }
+    return 0;
+}
+
+static struct argp argp = { options, parse_opt, args_doc, doc, 0, 0, 0 };
 
 typedef enum {
   ORG,
@@ -114,9 +159,9 @@ uint skipArrayLen = 0;
 
 
 // Function definitions
-uint    loadEcuBinFile();
+uint loadEcuBinFile(char *binFilename);
 
-uint    loadSymbolFile();
+uint    loadSymbolFile(char *symFilename);
 bool    addSymbol(word address, ROMArea ra, char* symbol);
 void    generateRelativeSymbols(word binCurrPos, opUnion ou, byte* buffPtr, bool isSubOp);
 char*   getSymbol(word address);
@@ -148,12 +193,12 @@ bool    inSkipArray(word opWord);
 
 void buildRomAreaStruct();
 
-uint loadEcuBinFile() {
+uint loadEcuBinFile(char *binFilename) {
   FILE*   ecuBin;
   long    binSize;
   size_t  bytesRead;
 
-  ecuBin = fopen(BIN_FILE, "rb");
+  ecuBin = fopen(binFilename, "rb");
 
   if(ecuBin == NULL) {
     fputs("\nFile error\n", stderr);
@@ -189,12 +234,12 @@ uint loadEcuBinFile() {
 }
 
 
-uint loadSymbolFile() {
+uint loadSymbolFile(char *symFilename) {
   FILE*   symFile;
   long    symSize;
   size_t  bytesRead;
 
-  symFile = fopen(SYM_FILE, "r");
+  symFile = fopen(symFilename, "r");
 
   if(symFile == NULL) {
     fputs("\nFile error\n", stderr);
