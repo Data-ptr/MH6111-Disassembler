@@ -10,13 +10,9 @@
 #define RAW_BYTES_PAD "            "
 #define LABEL_PAD -20
 
-//#define BIN_FILE "E771A-32k.bin"
-//#define SYM_FILE "e931.sym"
-
 typedef unsigned char  byte;
 typedef unsigned short word;
 typedef unsigned int   uint;
-//typedef unsigned int   bool;
 
 //
 // Argp stuff
