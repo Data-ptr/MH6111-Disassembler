@@ -1,8 +1,6 @@
-
 //
 // Symbols
 //
-
 bool addSymbol(word address, ROMArea ra, char* symbol) {
   symbolStruct* tempSymbolTable = (symbolStruct*)malloc(sizeof(symbolStruct) * (numSymbols + 1)); // End of main
 
@@ -204,4 +202,63 @@ word getOpSymbol(word binCurrPos, opUnion op, byte* buffPtr, bool* chkFlg) {
   };
 
   return opWord;
+}
+
+//
+// org
+//
+void addOrg(word address) {
+  static int i = 0;
+
+  orgTable[i++] = address;
+}
+
+void doOrg(word binCurrPos, char** symbol, bool lineNumbers, bool rawBytes) {
+  // Origin (.org)
+  for(int i = 0; i < ORG_MAX; i++) {
+    if(orgTable[i] == binCurrPos) {
+      if(rawBytes) {
+        printf("            ");
+      }
+      char frmt[16] = "\0";
+      sprintf(frmt, "%%%is%%-8s$%%04x\n", LABEL_PAD);
+      // `.org`s should come first with a label
+      //"%-17s%-8s$%04x\n"
+      printf(frmt, *symbol, ".org", binCurrPos);
+
+      if(lineNumbers) {
+        printf("%04X ", binCurrPos);
+      }
+
+      // Clear the label for the rest of this binCurrPos
+      *symbol = "\0";
+    }
+  }
+}
+
+//
+// Sorting
+//
+int cmpSymbols(const void * a, const void * b) {
+   return ( ((symbolStruct*)a)->addr - ((symbolStruct*)b)->addr );
+}
+
+void sortSymbols() {
+  qsort(symbolTable, numSymbols, sizeof(symbolStruct), cmpSymbols);
+}
+
+//
+// Helper
+//
+bool inSkipArray(word opWord) {
+  bool ret = 0;
+
+  for(int i=0; i < skipArrayLen; i++) {
+    if(skipArray[i] == opWord) {
+      ret = 1;
+      break;
+    }
+  }
+
+  return ret;
 }
