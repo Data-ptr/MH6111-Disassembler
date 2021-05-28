@@ -91,6 +91,8 @@ int main (int argc, char *argv[]) {
     lastBuffPtr = buffPtr;
     updateRomArea(buffPtr, &ra, 0);
 
+    //printf("\nROM area: %s\n", ra == DATA ? "data" : "code");
+
     if(arguments.lineNumbers) {
       printf("%04X ", binCurrPos);
     }
@@ -127,7 +129,7 @@ int main (int argc, char *argv[]) {
 void buildRomAreaStruct() {
   int i = 0;
   ROMArea lastRa = CODE;
-  uint rasIndex = 0;
+  //uint rasIndex = 0;
 
   while(i < numSymbols) {
     if(ORG == symbolTable[i].area) {

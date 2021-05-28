@@ -627,7 +627,7 @@ uint bytesToNextSection(byte* buffPtr) {
 }
 
 uint bytesToNextLabel(byte* buffPtr) {
-  static uint lastWasZero = 0;
+  //static uint lastWasZero = 0;
   uint ret = 0;
   word binCurrPos = getBinPos(buffPtr);
 
@@ -638,32 +638,21 @@ uint bytesToNextLabel(byte* buffPtr) {
     }
   }
 
-  // if(0 == ret) {
-  //   if(lastWasZero) { //We got 0 and the next label was 0 again
-  //     lastWasZero = 0;
-  //     ret = 1;
-  //   } else {
-  //     lastWasZero = 1;
-  //     ret = bytesToNextLabel(buffPtr + 1);
-  //   }
-  // }
-
-  //printf("Bytes to next label: %i\n", ret);
-
   return ret;
 }
 
 ROMArea getRomArea(word binCurrPos, ROMArea ra, bool reset) {
-  static int i = 0;
+  ROMArea ret = ra;
 
-  if(reset) {
-    i = 0;
+  for(int i = 0; i < rasIndex; i++) {
+    if(binCurrPos == ras[i].address) {
+      ret = ras[i].area;
+      break;
+    } else if(binCurrPos < ras[i].address) {
+      ret = ras[i-1].area;
+      break;
+    }
   }
 
-  if(binCurrPos == ras[i].address) {
-    //printf("ROM Area: %s\n", CODE == ras[i].area ? "CODE" : "DATA");
-    return ras[i++].area;
-  }
-
-  return ra;
+  return ret;
 }
