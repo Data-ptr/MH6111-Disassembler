@@ -60,22 +60,22 @@ operation opTable[OP_TABLE_SZ] = {
   {"clrb",    1, IMPLIED,   0, 0},   //0x5f
 
   {"neg",     2, INDEXED,   0, 0},   //0x60
-  {"0x61",    0, IMPLIED,   0, 0}, {"0x62",    0, IMPLIED,     0, 0},
+  {"0x61",    0, INDEXED,   0, 0}, {"0x62",    0, INDEXED,     0, 0},
   {"com",     2, INDEXED,   0, 0}, {"lsr",     2, INDEXED,     0, 0},
-  {"0x65",    0, IMPLIED,   0, 0}, {"ror",     2, INDEXED,     0, 0},
+  {"0x65",    0, INDEXED,   0, 0}, {"ror",     2, INDEXED,     0, 0},
   {"asr",     2, INDEXED,   0, 0}, {"asl",     2, INDEXED,     0, 0},
   {"rol",     2, INDEXED,   0, 0}, {"dec",     2, INDEXED,     0, 0},
-  {"0x6b",    0, IMPLIED,   0, 0}, {"inc",     2, INDEXED,     0, 0},
+  {"0x6b",    0, INDEXED,   0, 0}, {"inc",     2, INDEXED,     0, 0},
   {"tst",     2, INDEXED,   0, 0}, {"jmp",     2, INDEXED,     0, 0},
   {"clr",     2, INDEXED,   0, 0},   //0x6f
 
   {"neg",     3, EXTENDED,  0, 0},   //0x70
-  {"0x71",    0, IMPLIED,   0, 0}, {"0x72",    0, IMPLIED,     0, 0},
+  {"0x71",    0, EXTENDED,  0, 0}, {"0x72",    0, EXTENDED,    0, 0},
   {"com",     3, EXTENDED,  0, 0}, {"lsr",     3, EXTENDED,    0, 0},
-  {"0x75",    0, IMPLIED,   0, 0}, {"ror",     3, EXTENDED,    0, 0},
+  {"0x75",    0, EXTENDED,  0, 0}, {"ror",     3, EXTENDED,    0, 0},
   {"asr",     3, EXTENDED,  0, 0}, {"asl",     3, EXTENDED,    0, 0},
   {"rol",     3, EXTENDED,  0, 0}, {"dec",     3, EXTENDED,    0, 0},
-  {"0x7b",    0, IMPLIED,   0, 0}, {"inc",     3, EXTENDED,    0, 0},
+  {"0x7b",    0, EXTENDED,  0, 0}, {"inc",     3, EXTENDED,    0, 0},
   {"tst",     3, EXTENDED,  0, 0}, {"jmp",     3, EXTENDED,    0, 0},
   {"clr",     3, EXTENDED,  0, 0},   //0x7f
 
@@ -161,7 +161,7 @@ operation opTable[OP_TABLE_SZ] = {
 };
 
 subOpDef soDefs[SUB_OP_NUM] = {
-    {0xcd, {"ldy",  4, IMMEDIATE16, 1, 0xce}},
+    {0xcd, {"ldy",  4, IMMEDIATE16, 1, 0xce}},//Duplicate?
     {0xcd, {"iny",  2, IMPLIED,     1, 0x08}},
     {0xcd, {"dey",  2, IMPLIED,     1, 0x09}},
     {0xcd, {"xgdy", 2, IMPLIED,     1, 0x1a}},
