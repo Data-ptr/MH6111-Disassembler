@@ -34,6 +34,9 @@ Report bugs to <janehacker1@gmail.com>
 ./7675Disassm standard_E932_E931_source.obj e931.sym
 ```
 
+## Docs
+* https://app.gitbook.com/@janehacker1/s/dsm-ecu/disassembly-from-scratch/things-you-need
+
 ## Symbol files
 * Format: TYPE\tBYTES\t\t[LABEL]
   - eg.: `code  E4A1    ecuInit`
