@@ -2,7 +2,7 @@
 #define MNEMONIC_LEN 6
 #define OP_TABLE_SZ 0x100
 #define FORMATS_NUM 11
-#define SUB_OP_NUM 41
+#define SUB_OP_NUM 46
 #define SYM_BUF_MAX 128
 #define OP_SYMBOLS_MAX 3
 #define ORG_MAX 4

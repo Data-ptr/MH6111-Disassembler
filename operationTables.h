@@ -11,7 +11,7 @@ operation opTable[OP_TABLE_SZ] = {
 
   {"sba",     1, IMPLIED,   0, 0},   //0x10
   {"cba",     1, IMPLIED,   0, 0}, {"0x12",    0, IMPLIED,     0, 0},
-  {"0x13",    0, IMPLIED,   0, 0}, {"div",     2, IMMEDIATE,   0, 0},
+  {"0x13",    0, IMPLIED,   0, 0}, {"div",     2, DIRECT,      0, 0},
   {"div",     2, DIRECT,    0, 0}, {"tab",     1, IMPLIED,     0, 0},
   {"tba",     1, IMPLIED,   0, 0}, {"xgxy",    1, IMPLIED,     0, 0},
   {"daa",     1, IMPLIED,   0, 0}, {"xgdx",    1, IMPLIED,     0, 0},
@@ -123,7 +123,7 @@ operation opTable[OP_TABLE_SZ] = {
   {"cmpb",    2, IMMEDIATE,   0, 0}, {"sbcb",  2, IMMEDIATE,   0, 0},
   {"addd",    3, IMMEDIATE16, 0, 0}, {"andb",  2, IMMEDIATE,   0, 0},
   {"bitb",    2, IMMEDIATE,   0, 0}, {"ldab",  2, IMMEDIATE,   0, 0},
-  {"0xc7",    0, IMPLIED,     0, 0}, {"eorb",  2, IMMEDIATE,   0, 0},
+  {"brset",   4, INDEXED,     0, 0}, {"eorb",  2, IMMEDIATE,   0, 0}, //0xC7 MH6211
   {"adcb",    2, IMMEDIATE,   0, 0}, {"orab",  2, IMMEDIATE,   0, 0},
   {"addb",    2, IMMEDIATE,   0, 0}, {"ldd",   3, IMMEDIATE16, 0, 0},
   {"0xcd",    0, IMMEDIATE,   0, 0}, {"ldx",   3, IMMEDIATE16, 0, 0},
@@ -161,15 +161,19 @@ operation opTable[OP_TABLE_SZ] = {
 };
 
 subOpDef soDefs[SUB_OP_NUM] = {
-    {0xcd, {"ldy",  4, IMMEDIATE16, 1, 0xce}},//Duplicate?
     {0xcd, {"iny",  2, IMPLIED,     1, 0x08}},
     {0xcd, {"dey",  2, IMPLIED,     1, 0x09}},
     {0xcd, {"xgdy", 2, IMPLIED,     1, 0x1a}},
     {0xcd, {"aby",  2, IMPLIED,     1, 0x3a}},
     {0xcd, {"cmpy", 4, IMMEDIATE16, 1, 0x8c}},
+    {0xcd, {"cpd",  2, INDEXEDY,    1, 0xa3}}, // MH6211
+    {0xcd, {"cpx",  2, INDEXEDY,    1, 0xac}}, // MH6211
     {0xcd, {"ldy",  4, IMMEDIATE16, 1, 0xce}},
     {0xcd, {"sty",  3, DIRECT,      1, 0xdf}},
+    {0xcd, {"ldy",  3, DIRECT,      1, 0xde}}, // MH6211 - undocumented
     {0xcd, {"ldy",  3, INDEXED,     1, 0xee}},
+    {0xcd, {"stx",  2, INDEXEDY,    1, 0xef}}, // MH6211
+    {0xcd, {"nop",  2, INDEXEDY,    1, 0xfe}}, // MH6211
     {0xa0, {"suba", 2, INDEXEDY,    1, 0x80}},
     {0xa1, {"cmpa", 2, INDEXEDY,    1, 0x80}},
     {0xa2, {"sbca", 2, INDEXEDY,    1, 0x80}},
