@@ -1,0 +1,18 @@
+org 8000
+data	8000		epromStart
+data  9100    t_fuelmap
+data  9570    t_ignition
+code  B000    morecode1
+data  B581    moredata1
+code  C000    reset?
+code  E6FE    vec7
+code  ED17    vec2
+data  F98C    T_data1
+code  F0B0    vec19
+code  F0D9    vec16
+code  F9DF    vec13
+code  F9E9    vec12
+code  FA76    vec11
+data  FB4B    moredata5
+org	FFD8
+vector	FFD8		intVector 

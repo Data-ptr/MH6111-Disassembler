@@ -52,7 +52,7 @@ Mkfile.old
 dkms.conf
 
 #Custom
-*.sym
+#*.sym
 *.bin
 *.asm
 7675Disassm
