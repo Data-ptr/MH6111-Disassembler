@@ -56,3 +56,6 @@ dkms.conf
 *.bin
 *.asm
 7675Disassm
+out/
+binaries/*
+.DS_Store
