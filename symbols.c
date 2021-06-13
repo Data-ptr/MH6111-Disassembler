@@ -21,6 +21,22 @@ bool addSymbol(word address, ROMArea ra, char* symbol) {
   return 1;
 }
 
+bool addValidSymAddr(word address) {
+  word* tempVSA = (word*)malloc(sizeof(word) * (validSymAddrSz + 1)); // End of main
+
+  if(0 != validSymAddrSz) {
+    memcpy(tempVSA, validSymAddr, sizeof(word) * validSymAddrSz);
+    free(validSymAddr);
+  }
+
+  tempVSA[validSymAddrSz] = address;
+
+  validSymAddr = tempVSA;
+  validSymAddrSz++;
+
+  return 1;
+}
+
 char* getSymbol(word address) {
   char* ret = "\0";
 
@@ -100,13 +116,16 @@ void generateRelativeSymbols(word binCurrPos, opUnion ou, byte* buffPtr, bool is
     if(IMMEDIATE16 == currSubOp.type) {
       word  opWord    = (buffPtr[2] << 8) + buffPtr[3];
 
-
-      if(0x8000 < opWord && !inSkipArray(opWord)) {
+      if(
+        VALID_ROM_START < opWord
+        && !inSkipArray(binCurrPos)
+        && CODE != getRomArea(opWord, CODE, 0)
+      ) {
         char* symbol    = getSymbol(opWord);
 
         // Make up a label
         if('\0' == symbol[0]) {
-          symbol = (char*)malloc(sizeof(char) * 6);
+          symbol = (char*)malloc(sizeof(char) * MNEMONIC_LEN);
           // Make up a label for the symbol
           sprintf(symbol, "T%i", generatedLabel++);
           // Add the made up symbol to the symbol list
@@ -121,8 +140,12 @@ void generateRelativeSymbols(word binCurrPos, opUnion ou, byte* buffPtr, bool is
       char* symbol    = getSymbol(opWord);
 
       // Make up a label
-      if('\0' == symbol[0] && !inSkipArray(opWord)) {
-        symbol = (char*)malloc(sizeof(char) * 6);
+      if(
+        '\0' == symbol[0]
+        && !inSkipArray(binCurrPos)
+        //&& DATA != getRomArea(opWord, DATA, 0)
+      ) {
+        symbol = (char*)malloc(sizeof(char) * MNEMONIC_LEN);
         // Make up a label for the symbol
         sprintf(symbol, "L%i", generatedLabel++);
         // Add the made up symbol to the symbol list
@@ -134,8 +157,8 @@ void generateRelativeSymbols(word binCurrPos, opUnion ou, byte* buffPtr, bool is
       char* symbol    = getSymbol(opWord);
 
       // Make up a label
-      if('\0' == symbol[0] && !inSkipArray(opWord)) {
-        symbol = (char*)malloc(sizeof(char) * 6);
+      if('\0' == symbol[0] && !inSkipArray(binCurrPos)) {
+        symbol = (char*)malloc(sizeof(char) * MNEMONIC_LEN);
         // Make up a label for the symbol
         sprintf(symbol, "L%i", generatedLabel++);
         // Add the made up symbol to the symbol list
@@ -145,17 +168,19 @@ void generateRelativeSymbols(word binCurrPos, opUnion ou, byte* buffPtr, bool is
       word  opWord    = (buffPtr[1] << 8) + buffPtr[2];
 
       if(
-        !inSkipArray(opWord) &&
-          // 0 != strcmp(currOp.mnemonic, "ldd") &&
-          //0 != strcmp(currOp.mnemonic, "ldx") &&
-          0xD000 < opWord &&
-          0xFFFF > opWord
-        ) {
+        VALID_ROM_START < opWord
+        && 0xFFFF > opWord
+        // && 0 != strcmp(currOp.mnemonic, "ldx")
+        // && 0 != strcmp(currOp.mnemonic, "bvc")
+        // && 0 != strcmp(currOp.mnemonic, "bra")
+        && !inSkipArray(binCurrPos)
+        && CODE != getRomArea(opWord, CODE, 0)
+      ) {
         char* symbol    = getSymbol(opWord);
 
         // Make up a label
         if('\0' == symbol[0]) {
-          symbol = (char*)malloc(sizeof(char) * 6);
+          symbol = (char*)malloc(sizeof(char) * MNEMONIC_LEN);
           // Make up a label for the symbol
           sprintf(symbol, "T%i", generatedLabel++);
           // Add the made up symbol to the symbol list

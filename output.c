@@ -204,6 +204,25 @@ byte* printData(word binCurrPos, byte* buffPtr, bool lineNumbers, bool rawBytes)
       sprintf(frmt, "%%%is%%-8s%%d, $FF\n", LABEL_PAD);
       //"%-17s%-8s%d, $FF\n"
       printf(frmt, symbol, ".fill", numFFs);
+    } else if((byte)0x00 == *buffPtr && (byte)0x00 == buffPtr[1]) { //If at least 2-bytes
+      uint num00s = 0;
+
+      while((byte)0x00 == *buffPtr && bytesToNextLabel(buffPtr) >= 0) {
+        num00s++;
+        buffPtr++;
+      }
+
+      //printRaw(buffPtr, 4);
+      doOrg(binCurrPos, &symbol, lineNumbers, rawBytes);
+
+      if(rawBytes) {
+        printf("            ");
+      }
+
+      char frmt[18] = "\0";
+      sprintf(frmt, "%%%is%%-8s%%d, $00\n", LABEL_PAD);
+      //"%-17s%-8s%d, $FF\n"
+      printf(frmt, symbol, ".fill", num00s);
     } else {
       if(rawBytes) {
         printRaw(buffPtr, 4);

@@ -69,6 +69,7 @@ int main (int argc, char *argv[]) {
     lastBuffPtr = buffPtr;
     updateRomArea(buffPtr, &ra, 0);
 
+    // If we aren't in a CODE region, find the next code region
     if(CODE != ra) {
        buffPtr += bytesToNextSection(buffPtr);
        continue;
@@ -124,6 +125,7 @@ int main (int argc, char *argv[]) {
   printf(frmt, "");
 
   // Clean up
+  free(validSymAddr);
   free(binBuffer);
   free(symbolTable);
   freeSubOps();

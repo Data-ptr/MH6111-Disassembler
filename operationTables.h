@@ -11,12 +11,15 @@ operation opTable[OP_TABLE_SZ] = {
 
   {"sba",     1, IMPLIED,   0, 0},   //0x10
   {"cba",     1, IMPLIED,   0, 0}, {"0x12",    0, IMPLIED,     0, 0},
-  {"0x13",    0, IMPLIED,   0, 0}, {"div",     2, DIRECT,      0, 0},
+//  {"brclr",   2, DIRECT,    0, 0}, {"div",     2, DIRECT,      0, 0},
+//  {"brclr",   3, DIRECT2,   0, 0}, {"div",     2, DIRECT,      0, 0},
+  {"brclr",   4, DIRECT3,   0, 0}, {"div",     2, DIRECT,      0, 0}, //MH6211
+//  {"0x13",    0, IMPLIED,   0, 0}, {"div",     2, DIRECT,      0, 0},
   {"div",     2, DIRECT,    0, 0}, {"tab",     1, IMPLIED,     0, 0},
   {"tba",     1, IMPLIED,   0, 0}, {"xgxy",    1, IMPLIED,     0, 0},
   {"daa",     1, IMPLIED,   0, 0}, {"xgdx",    1, IMPLIED,     0, 0},
   {"aba",     1, IMPLIED,   0, 0}, {"cpd",     3, IMMEDIATE16, 0, 0},
-  {"cmpd1",   2, DIRECT,    0, 0}, {"0x1e",    0, IMPLIED,     0, 0},
+  {"cmpd1",   2, DIRECT,    0, 0}, {"cpd",     2, INDEXED,     0, 0},
   {"cpd",     3, EXTENDED,  0, 0},   //0x1f
 
   {"bra",     2, RELATIVE,  0, 0},   //0x20
@@ -173,7 +176,7 @@ subOpDef soDefs[SUB_OP_NUM] = {
     {0xcd, {"ldy",  3, DIRECT,      1, 0xde}}, // MH6211 - undocumented
     {0xcd, {"ldy",  3, INDEXED,     1, 0xee}},
     {0xcd, {"stx",  2, INDEXEDY,    1, 0xef}}, // MH6211
-    {0xcd, {"nop",  2, INDEXEDY,    1, 0xfe}}, // MH6211
+    {0xcd, {"ldy",  2, EXTENDED,    1, 0xfe}}, // MH6211
     {0xa0, {"suba", 2, INDEXEDY,    1, 0x80}},
     {0xa1, {"cmpa", 2, INDEXEDY,    1, 0x80}},
     {0xa2, {"sbca", 2, INDEXEDY,    1, 0x80}},

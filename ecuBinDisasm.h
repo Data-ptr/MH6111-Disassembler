@@ -1,4 +1,5 @@
 #define ROM_START 0x8000
+#define VALID_ROM_START 0xD000
 #define MNEMONIC_LEN 6
 #define OP_TABLE_SZ 0x100
 #define FORMATS_NUM 11
@@ -119,6 +120,7 @@ typedef struct {
   word addr;
   ROMArea area;
   char label[32];
+  bool landed;      // Was this address used at the start of a "line"
 } symbolStruct;
 
 typedef union {
@@ -153,6 +155,9 @@ word orgTable[ORG_MAX];
 word skipArray[ORG_MAX];
 uint skipArrayLen = 0;
 
+word* validSymAddr;
+uint validSymAddrSz = 0;
+
 
 // Function definitions
 uint loadEcuBinFile(char *binFilename);
@@ -168,6 +173,7 @@ void    printSymbols();
 void    addOrg(word address);
 void    doOrg(word binCurrPos, char** symbol, bool lineNumbers, bool rawBytes);
 bool    inSkipArray(word opWord);
+bool addValidSymAddr(word address);
 
 // decode.c
 word    decodeOpAndJump(word binCurrPos, byte * buffPtr);
