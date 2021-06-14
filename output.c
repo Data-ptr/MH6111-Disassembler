@@ -43,6 +43,7 @@ void printOp(word binCurrPos, opUnion oper, byte* buffPtr, bool lineNumbers, boo
   if(rawBytes) {
     printRaw(buffPtr, oper.op.numBytes);
   }
+  
   char frmt[17] = "\0";
   sprintf(frmt, "%%%is%%-8s", LABEL_PAD);
   // Print label and mnemonic

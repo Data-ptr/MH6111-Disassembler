@@ -147,7 +147,7 @@ void generateRelativeSymbols(word binCurrPos, opUnion ou, byte* buffPtr, bool is
       ) {
         symbol = (char*)malloc(sizeof(char) * MNEMONIC_LEN);
         // Make up a label for the symbol
-        sprintf(symbol, "L%i", generatedLabel++);
+        sprintf(symbol, "L%04X", opWord); //"L%i", generatedLabel++);
         // Add the made up symbol to the symbol list
         addSymbol(opWord, CODE, symbol);
       }
@@ -160,7 +160,7 @@ void generateRelativeSymbols(word binCurrPos, opUnion ou, byte* buffPtr, bool is
       if('\0' == symbol[0] && !inSkipArray(binCurrPos)) {
         symbol = (char*)malloc(sizeof(char) * MNEMONIC_LEN);
         // Make up a label for the symbol
-        sprintf(symbol, "L%i", generatedLabel++);
+        sprintf(symbol, "L%04X", opWord); //"L%i", generatedLabel++);
         // Add the made up symbol to the symbol list
         addSymbol(opWord, CODE, symbol);
       }
@@ -170,9 +170,6 @@ void generateRelativeSymbols(word binCurrPos, opUnion ou, byte* buffPtr, bool is
       if(
         VALID_ROM_START < opWord
         && 0xFFFF > opWord
-        // && 0 != strcmp(currOp.mnemonic, "ldx")
-        // && 0 != strcmp(currOp.mnemonic, "bvc")
-        // && 0 != strcmp(currOp.mnemonic, "bra")
         && !inSkipArray(binCurrPos)
         && CODE != getRomArea(opWord, CODE, 0)
       ) {
@@ -192,7 +189,7 @@ void generateRelativeSymbols(word binCurrPos, opUnion ou, byte* buffPtr, bool is
 }
 
 void printSymbols() {
-  for(int i=0; i < numSymbols; i++){
+  for(int i=0; i < numSymbols; i++) {
     printf("%04x:\t%i\t%-8s\n", symbolTable[i].addr, (int)symbolTable[i].area, symbolTable[i].label);
   }
 }

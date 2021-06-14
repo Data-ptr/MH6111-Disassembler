@@ -138,11 +138,3 @@ code  0184	    CAS_t
 code  0186	    CAS_t1
 code  0188	    CAS_t2
 code  018A	    CAS_t3
-; Bad label skips
-skip  D6CA
-skip  EB47
-skip  F097
-skip  F09B
-skip  FC2C
-skip  FED0
-; code
