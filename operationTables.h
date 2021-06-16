@@ -11,7 +11,7 @@ operation opTable[OP_TABLE_SZ] = {
 
   {"sba",     1, IMPLIED,   0, 0},   //0x10
   {"cba",     1, IMPLIED,   0, 0}, {"0x12",    0, IMPLIED,     0, 0},
-  {"brclr",   4, DIRECT3,   0, 0}, {"div",     2, DIRECT,      0, 0}, //0x13 MH6211
+  {"brclr2",  4, DIRECT3,   0, 0}, {"div",     2, DIRECT,      0, 0}, //0x13 MH6211
 //  {"0x13",    0, IMPLIED,   0, 0}, {"div",     2, DIRECT,      0, 0},
   {"div",     2, DIRECT,    0, 0}, {"tab",     1, IMPLIED,     0, 0},
   {"tba",     1, IMPLIED,   0, 0}, {"xgxy",    1, IMPLIED,     0, 0},

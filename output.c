@@ -43,7 +43,7 @@ void printOp(word binCurrPos, opUnion oper, byte* buffPtr, bool lineNumbers, boo
   if(rawBytes) {
     printRaw(buffPtr, oper.op.numBytes);
   }
-  
+
   char frmt[17] = "\0";
   sprintf(frmt, "%%%is%%-8s", LABEL_PAD);
   // Print label and mnemonic
@@ -184,7 +184,7 @@ byte* printData(word binCurrPos, byte* buffPtr, bool lineNumbers, bool rawBytes)
   }
 
   // If there are at least 4 bytes to print, and maybe we are on a label
-  if(btns >= 4 && btnl >= 4 && binCurrPos + 4 < 0xFFFF) {
+  if(btns >= 4 && btnl >= 4 && binCurrPos + 4 < ROM_END) {
     // Code for .fill directive
     if((byte)0xFF == *buffPtr && (byte)0xFF == buffPtr[1]) { //If at least 2-bytes
       uint numFFs = 0;

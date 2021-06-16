@@ -1,0 +1,54 @@
+org 0000
+data	0000		epromStart
+
+00  reg    PORT1DDR
+01  reg    PORT2DDR
+02  reg    PORT1
+03  reg    PORT2
+04  reg    P3DDR
+05  reg    P4DDR
+06  reg    PORT3
+07  reg    PORT4
+08  reg    T1CSR1
+09  reg    TMR1H
+0A  reg    TMR1L
+0B  reg    T1OCR1H
+0C  reg    T1OCR1L
+0D  reg    T1ICR1H
+0E  reg    T1ICR1L
+0F  reg    P3CSR
+10  reg    SCIRMC
+11  reg    SCSR
+12  reg    RXD
+13  reg    TXD
+14 	reg    RAMCR
+
+;
+;code  0x063f    stack
+
+;First code segment
+code  500A    codestart
+data  55D3    padding1
+data  68B1    padding2
+code  7000    morecode2
+data  7CBA    padding3
+data  EFAE    moredata1
+
+;org	FFAC
+vector	FFAC		intVector
+; From vector table
+code  7cff    START
+code  9f85    RESET
+code  a0c3    VEC_1
+code  9dc9    VEC_2
+code  9eec    VEC_3
+code  9e22    VEC_4
+code  9855    VEC_5
+code  9b30    VEC_6
+code  9c45    VEC_7
+code  9d4f    VEC_8
+code  986c    VEC_9
+code  980e    VEC_10
+code  9820    VEC_11
+code  9f4d    VEC_12
+code  ef6d    VEC_13

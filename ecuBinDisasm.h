@@ -1,5 +1,8 @@
-#define ROM_START 0x8000
-#define VALID_ROM_START 0xD000
+#define ROM_START 0x0000
+//#define ROM_START 0x8000
+#define ROM_END 0xFFFF
+#define VALID_ROM_START 0x5000
+//#define VALID_ROM_START 0xD000
 #define MNEMONIC_LEN 6
 #define OP_TABLE_SZ 0x100
 #define FORMATS_NUM 11
@@ -143,7 +146,7 @@ byte* binBuffer;
 byte symBuffer[SYM_BUF_MAX];
 
 // Used for generated labels (RELATIVE for now)
-uint generatedLabel = 4003;
+uint generatedLabel = 1; //Set to where you want the symbol counting to start
 
 
 romAreaStruct ras[RAS_MAX] = {0};

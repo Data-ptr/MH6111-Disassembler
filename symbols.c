@@ -169,7 +169,7 @@ void generateRelativeSymbols(word binCurrPos, opUnion ou, byte* buffPtr, bool is
 
       if(
         VALID_ROM_START < opWord
-        && 0xFFFF > opWord
+        && ROM_END > opWord
         && !inSkipArray(binCurrPos)
         && CODE != getRomArea(opWord, CODE, 0)
       ) {
@@ -182,6 +182,26 @@ void generateRelativeSymbols(word binCurrPos, opUnion ou, byte* buffPtr, bool is
           sprintf(symbol, "T%i", generatedLabel++);
           // Add the made up symbol to the symbol list
           addSymbol(opWord, DATA, symbol);
+        }
+      }
+    } else if(0xBD == buffPtr[0]) {
+      word  opWord    = (buffPtr[1] << 8) + buffPtr[2];
+
+      if(
+        VALID_ROM_START < opWord
+        && ROM_END > opWord
+        && !inSkipArray(binCurrPos)
+        && DATA != getRomArea(opWord, DATA, 0)
+      ) {
+        char* symbol    = getSymbol(opWord);
+
+        // Make up a label
+        if('\0' == symbol[0]) {
+          symbol = (char*)malloc(sizeof(char) * MNEMONIC_LEN);
+          // Make up a label for the symbol
+          sprintf(symbol, "SUBROUTINE%i", generatedLabel++);
+          // Add the made up symbol to the symbol list
+          addSymbol(opWord, CODE, symbol);
         }
       }
     }
