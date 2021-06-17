@@ -19,15 +19,19 @@ typedef unsigned int   uint;
 //
 // Argp stuff
 //
-const         char       *argp_program_version = "7675disassem 0.1";
+const         char       *argp_program_version = "76XXdisassem 0.1";
 const         char       *argp_program_bug_address = "<janehacker1@gmail.com>";
-static        char        doc[] = "Disassembler for the MH6111/TMP76C75T(7675)";
+static        char        doc[] = "Disassembler for the MH6X11/TMP76XX(76XX)";
 static        char        args_doc[] = "<BINARY FILE> <SYMBOL FILE>";
 static struct argp_option options[] = {
-    { "linenumbers", 'l', 0, OPTION_ARG_OPTIONAL, "Print line numbers."},
-    { "rawbytes",    'r', 0, OPTION_ARG_OPTIONAL, "Print raw bytes."},
-    { "rom-start",   's', "ADDR", 0, "Address (HEX) of ROM start.          Default:0x8000"},
-    { "valid-rom",   'v', "ADDR", 0, "Address (HEX) of start of valid ROM. Default:0xD000"},
+    { "linenumbers", 'l', 0,      OPTION_ARG_OPTIONAL,
+      "Print line numbers" },
+    { "rawbytes",    'r', 0,      OPTION_ARG_OPTIONAL,
+      "Print raw bytes" },
+    { "rom-start",   's', "ADDR", 0,
+      "Address (HEX) of ROM start          Default:0x8000" },
+    { "valid-rom",   'v', "ADDR", 0,
+      "Address (HEX) of start of valid ROM Default:0xD000" },
     { 0 }
 };
 

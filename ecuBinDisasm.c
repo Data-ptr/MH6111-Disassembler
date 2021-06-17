@@ -34,9 +34,6 @@ int main (int argc, char *argv[]) {
 
   argp_parse(&argp, argc, argv, 0, 0, &storedArgs);
 
-  printf("Rom Start: %04x \n", storedArgs.romStart);
-  printf("Valid Rom Start: %04x \n", storedArgs.validRomStart);
-
   // Load symbols from file
   loadSymbolFile(storedArgs.args[1]);
   sortSymbols();
