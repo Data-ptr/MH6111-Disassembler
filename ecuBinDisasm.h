@@ -1,8 +1,6 @@
-#define ROM_START 0x0000
-//#define ROM_START 0x8000
+#define ROM_START 0x8000
 #define ROM_END 0xFFFF
-#define VALID_ROM_START 0x5000
-//#define VALID_ROM_START 0xD000
+#define VALID_ROM_START 0xD000
 #define MNEMONIC_LEN 6
 #define OP_TABLE_SZ 0x100
 #define FORMATS_NUM 11
@@ -21,28 +19,38 @@ typedef unsigned int   uint;
 //
 // Argp stuff
 //
-const char *argp_program_version = "7675disassem 0.1";
-const char *argp_program_bug_address = "<janehacker1@gmail.com>";
-static char doc[] = "Disassembler for the MH6111/TMP76C75T(7675)";
-static char args_doc[] = "<BINARY FILE> [SYMBOL FILE]";
+const         char       *argp_program_version = "7675disassem 0.1";
+const         char       *argp_program_bug_address = "<janehacker1@gmail.com>";
+static        char        doc[] = "Disassembler for the MH6111/TMP76C75T(7675)";
+static        char        args_doc[] = "<BINARY FILE> <SYMBOL FILE>";
 static struct argp_option options[] = {
     { "linenumbers", 'l', 0, OPTION_ARG_OPTIONAL, "Print line numbers."},
     { "rawbytes",    'r', 0, OPTION_ARG_OPTIONAL, "Print raw bytes."},
+    { "rom-start",   's', "ADDR", 0, "Address (HEX) of ROM start.          Default:0x8000"},
+    { "valid-rom",   'v', "ADDR", 0, "Address (HEX) of start of valid ROM. Default:0xD000"},
     { 0 }
 };
 
 struct arguments {
     bool lineNumbers;
     bool rawBytes;
+    word romStart;
+    word validRomStart;
     char *args[2];
-    char *option1;
 };
 
 static error_t parse_opt(int key, char *arg, struct argp_state *state) {
     struct arguments *arguments = state->input;
+
     switch (key) {
       case 'l': arguments->lineNumbers = 1; break;
       case 'r': arguments->rawBytes = 1; break;
+      case 's':
+        arguments->romStart = strtol(arg, NULL, 16);
+      break;
+      case 'v':
+        arguments->validRomStart = strtol(arg, NULL, 16);
+      break;
       case ARGP_KEY_ARG:
         // Too many arguments, if your program expects only one argument.
         if(state->arg_num > 2)
@@ -50,8 +58,8 @@ static error_t parse_opt(int key, char *arg, struct argp_state *state) {
         arguments->args[state->arg_num] = arg;
       break;
       case ARGP_KEY_END:
-        // Not enough arguments. if your program expects exactly one argument.
-        if(state->arg_num < 1)
+        // Not enough arguments. if your program expects exactly two argument.
+        if(state->arg_num < 2)
           argp_usage(state);
       break;
       default:
@@ -161,6 +169,8 @@ uint skipArrayLen = 0;
 word* validSymAddr;
 uint validSymAddrSz = 0;
 
+struct arguments storedArgs;
+
 
 // Function definitions
 uint loadEcuBinFile(char *binFilename);
@@ -176,7 +186,7 @@ void    printSymbols();
 void    addOrg(word address);
 void    doOrg(word binCurrPos, char** symbol, bool lineNumbers, bool rawBytes);
 bool    inSkipArray(word opWord);
-bool addValidSymAddr(word address);
+bool    addValidSymAddr(word address);
 
 // decode.c
 word    decodeOpAndJump(word binCurrPos, byte * buffPtr);
@@ -204,6 +214,8 @@ void    updateRomArea(byte* buffPtr, ROMArea* ra, bool reset);
 uint    bytesToNextLabel(byte* buffPtr);
 uint    bytesToNextSection(byte* buffPtr);
 word    getBinPos(byte* buffPtr);
+word    getRomStart();
+word    getValidRomStart();
 
 uint loadEcuBinFile(char *binFilename) {
   FILE*   ecuBin;

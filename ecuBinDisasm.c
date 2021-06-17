@@ -26,15 +26,19 @@ int main (int argc, char *argv[]) {
   //
   // Argument stuff
   //
-  struct arguments arguments;
+  // Defaults
+  storedArgs.lineNumbers   = 0;
+  storedArgs.rawBytes      = 0;
+  storedArgs.romStart      = ROM_START;
+  storedArgs.validRomStart = VALID_ROM_START;
 
-  arguments.lineNumbers = 0;
-  arguments.rawBytes = 0;
+  argp_parse(&argp, argc, argv, 0, 0, &storedArgs);
 
-  argp_parse(&argp, argc, argv, 0, 0, &arguments);
+  printf("Rom Start: %04x \n", storedArgs.romStart);
+  printf("Valid Rom Start: %04x \n", storedArgs.validRomStart);
 
   // Load symbols from file
-  loadSymbolFile(arguments.args[1]);
+  loadSymbolFile(storedArgs.args[1]);
   sortSymbols();
   //printSymbols();
 
@@ -46,13 +50,13 @@ int main (int argc, char *argv[]) {
   printf(frmt, "");
 
   // Since symbols in the RAM area aren't generated, they were loaded in file
-  printRamVariables(arguments.lineNumbers, arguments.rawBytes);
+  printRamVariables(storedArgs.lineNumbers, storedArgs.rawBytes);
 
   // Use soDefs to add multi-byte operations into the operations table (opTable)
   addSubOps();
 
   // Load bin file
-  bytesRead = loadEcuBinFile(arguments.args[0]);
+  bytesRead = loadEcuBinFile(storedArgs.args[0]);
 
   /* the whole file is now loaded in the memory buffer. */
 
@@ -100,23 +104,23 @@ int main (int argc, char *argv[]) {
 
     //printf("\nROM area: %s\n", ra == DATA ? "data" : "code");
 
-    if(arguments.lineNumbers) {
+    if(storedArgs.lineNumbers) {
       printf("%04X ", binCurrPos);
     }
 
     if(DATA == ra || VECTOR == ra) {
-      buffPtr = printData(binCurrPos, buffPtr, arguments.lineNumbers, arguments.rawBytes);
+      buffPtr = printData(binCurrPos, buffPtr, storedArgs.lineNumbers, storedArgs.rawBytes);
     } else if(CODE == ra) {
-      buffPtr = decodeOp(binCurrPos, buffPtr, PRINT, arguments.lineNumbers, arguments.rawBytes);
+      buffPtr = decodeOp(binCurrPos, buffPtr, PRINT, storedArgs.lineNumbers, storedArgs.rawBytes);
     }
   }
 
   // End (.end)
-  if(arguments.lineNumbers) {
+  if(storedArgs.lineNumbers) {
     printf("%05X ",  0x10000);
   }
 
-  if(arguments.rawBytes) {
+  if(storedArgs.rawBytes) {
     printf("            ");
   }
 

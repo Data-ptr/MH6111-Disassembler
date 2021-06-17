@@ -16,7 +16,7 @@ void printRaw(byte* buffPtr, uint numBytes) {
 // Print "ram" variables
 //
 void printRamVariables(bool lineNumber, bool rawBytes) {
-  for(int i=0; ROM_START > symbolTable[i].addr; i++) {
+  for(int i=0; getRomStart() > symbolTable[i].addr; i++) {
     if(lineNumber){
       printf("0000 ");
     }

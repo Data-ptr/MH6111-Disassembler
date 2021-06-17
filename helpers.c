@@ -1,8 +1,16 @@
 //
 // Helpers
 //
+word getRomStart() {
+  return storedArgs.romStart;
+}
+
+word getValidRomStart() {
+  return storedArgs.validRomStart;
+}
+
 word getBinPos(byte* buffPtr) {
-  return ROM_START + (int)(buffPtr - binBuffer);
+  return getRomStart() + (int)(buffPtr - binBuffer);
 }
 
 uint bytesToNextSection(byte* buffPtr) {

@@ -117,7 +117,7 @@ void generateRelativeSymbols(word binCurrPos, opUnion ou, byte* buffPtr, bool is
       word  opWord    = (buffPtr[2] << 8) + buffPtr[3];
 
       if(
-        VALID_ROM_START < opWord
+        getValidRomStart() < opWord
         && !inSkipArray(binCurrPos)
         && CODE != getRomArea(opWord, CODE, 0)
       ) {
@@ -168,7 +168,7 @@ void generateRelativeSymbols(word binCurrPos, opUnion ou, byte* buffPtr, bool is
       word  opWord    = (buffPtr[1] << 8) + buffPtr[2];
 
       if(
-        VALID_ROM_START < opWord
+        getValidRomStart() < opWord
         && ROM_END > opWord
         && !inSkipArray(binCurrPos)
         && CODE != getRomArea(opWord, CODE, 0)
@@ -188,7 +188,7 @@ void generateRelativeSymbols(word binCurrPos, opUnion ou, byte* buffPtr, bool is
       word  opWord    = (buffPtr[1] << 8) + buffPtr[2];
 
       if(
-        VALID_ROM_START < opWord
+        getValidRomStart() < opWord
         && ROM_END > opWord
         && !inSkipArray(binCurrPos)
         && DATA != getRomArea(opWord, DATA, 0)
