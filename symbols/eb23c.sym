@@ -1,0 +1,17 @@
+org 0000
+data	0000		epromStart
+code  4600    codeStart
+data  7e74    dataStart
+code  8084    moreCode1
+data  83ec    moreData1
+code  840c    moreCode2
+data  b22d    moreData2
+code  b2ae    moreCode3
+data  b7de    moreData3
+code  b822    moreCode4
+data  b8f6    moreData4
+code  b91c    moreCode5
+data  bc86    moreData5
+code  bcb9    moreCode6
+org	FFAC
+vector	FFAC		intVector

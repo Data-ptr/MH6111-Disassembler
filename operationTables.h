@@ -10,7 +10,8 @@ operation opTable[OP_TABLE_SZ] = {
   {"sei",     1, IMPLIED,   0, 0},   //0x0f
 
   {"sba",     1, IMPLIED,   0, 0},   //0x10
-  {"cba",     1, IMPLIED,   0, 0}, {"0x12",    0, IMPLIED,     0, 0},
+  {"cba",     1, IMPLIED,   0, 0}, {"nop",     3, EXTENDED,     0, 0}, //0x12 MH6311
+//  {"cba",     1, IMPLIED,   0, 0}, {"0x12",    0, IMPLIED,     0, 0},
   {"brclr2",  4, DIRECT3,   0, 0}, {"div",     2, DIRECT,      0, 0}, //0x13 MH6211
 //  {"0x13",    0, IMPLIED,   0, 0}, {"div",     2, DIRECT,      0, 0},
   {"div",     2, DIRECT,    0, 0}, {"tab",     1, IMPLIED,     0, 0},
@@ -41,7 +42,8 @@ operation opTable[OP_TABLE_SZ] = {
   {"swi",     1, IMPLIED,   0, 0},   //0x3f
 
   {"nega",    1, IMPLIED,   0, 0},   //0x40
-  {"0x41",    0, IMPLIED,   0, 0}, {"0x42",    0, IMPLIED,     0, 0},
+  {"nop",     1, IMPLIED,   0, 0}, {"0x42",    0, IMPLIED,     0, 0},
+  //{"0x41",    0, IMPLIED,   0, 0}, {"0x42",    0, IMPLIED,     0, 0}, //MH6311
   {"coma",    1, IMPLIED,   0, 0}, {"lsra",    1, IMPLIED,     0, 0},
   {"0x45",    0, IMPLIED,   0, 0}, {"rora",    1, IMPLIED,     0, 0},
   {"asra",    1, IMPLIED,   0, 0}, {"asla",    1, IMPLIED,     0, 0},
@@ -66,7 +68,8 @@ operation opTable[OP_TABLE_SZ] = {
   {"0x65",    0, INDEXED,   0, 0}, {"ror",     2, INDEXED,     0, 0},
   {"asr",     2, INDEXED,   0, 0}, {"asl",     2, INDEXED,     0, 0},
   {"rol",     2, INDEXED,   0, 0}, {"dec",     2, INDEXED,     0, 0},
-  {"0x6b",    0, INDEXED,   0, 0}, {"inc",     2, INDEXED,     0, 0},
+  //{"0x6b",    0, INDEXED,   0, 0}, {"inc",     2, INDEXED,     0, 0},
+  {"nop",     1, IMPLIED,   0, 0}, {"inc",     2, INDEXED,     0, 0}, //0x6b MH6311
   {"tst",     2, INDEXED,   0, 0}, {"jmp",     2, INDEXED,     0, 0},
   {"clr",     2, INDEXED,   0, 0},   //0x6f
 
@@ -174,7 +177,8 @@ subOpDef soDefs[SUB_OP_NUM] = {
     {0xcd, {"ldy",  3, DIRECT,      1, 0xde}}, // MH6211 - undocumented
     {0xcd, {"ldy",  3, INDEXED,     1, 0xee}},
     {0xcd, {"stx",  2, INDEXEDY,    1, 0xef}}, // MH6211
-    {0xcd, {"ldy",  2, EXTENDED,    1, 0xfe}}, // MH6211
+    {0xcd, {"ldy",  4, EXTENDED,    1, 0xfe}}, // MH6211
+    {0xcd, {"stx",  4, EXTENDED,    1, 0xff}}, // MH6311 - undocumented
     {0xa0, {"suba", 2, INDEXEDY,    1, 0x80}},
     {0xa1, {"cmpa", 2, INDEXEDY,    1, 0x80}},
     {0xa2, {"sbca", 2, INDEXEDY,    1, 0x80}},

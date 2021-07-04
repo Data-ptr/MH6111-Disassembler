@@ -1,45 +1,64 @@
 # MH6111 Disassembler
-Disassembler for the Mitsubishi MH6111/Toshiba TMS76C75T.
+Disassembler for the Mitsubishi MH6X11/Toshiba TMS76XX.
 
 ## Objectives
 - [x] Disassemble DSM ECU E931 binary that was assembled from the commented source
 - [x] Make a bit perfect binary from the disassembly
 - [x] Disasseble N/A ECU binary using symbol file by working through step by step against E931 commented source
 - [x] Make a bit perfect binary from the disassembly
-<s>
- -[ ] Disassemble MH2111 code
-</s>
+- [x] Disassemble MH6211 code
+- [x] Disassemble MH2311 code
+
 
 ## Compile
 ```
 cc -largp -o 7675Disassm ecuBinDisasm.c
 ```
 
+
 ## Usage
 ```
-Usage: 7675Disassm [OPTION...] <BINARY FILE> [SYMBOL FILE]
-Disassembler for the MH6111/TMP76C75T(7675)
+Usage: 7675Disassm [OPTION...] <BINARY FILE> <SYMBOL FILE>
+Disassembler for the MH6X11/TMP76XX(76XX)
 
   -l, --linenumbers          Print line numbers
   -r, --rawbytes             Print raw bytes
+  -s, --rom-start=ADDR       Address (HEX) of ROM start
+                             Default:0x8000
+  -v, --valid-rom=ADDR       Address (HEX) of start of valid ROM
+                             Default:0xD000
   -?, --help                 Give this help list
       --usage                Give a short usage message
   -V, --version              Print program version
 
-Report bugs to <janehacker1@gmail.com>
+Mandatory or optional arguments to long options are also mandatory or optional
+for any corresponding short options.
+
+Report bugs to <janehacker1@gmail.com>.
+
 ```
 
+
 ## Execute
+32k (ROM start 0x8000)
 ```
 ./7675Disassm standard_E932_E931_source.obj e931.sym
 ```
 
+64k (ROM start 0x0000)
+```
+./7675Disassm -l -r -s0000 -v4000 binaries/EB23C.bin symbols/eb23c.sym > out/eb23c.lst
+```
+
+
 ## Docs
 * https://app.gitbook.com/@janehacker1/s/dsm-ecu/disassembly-from-scratch/things-you-need
+
 
 ## Symbol files
 * Format: TYPE\tBYTES\t\t[LABEL]
   - eg.: `code  E4A1    ecuInit`
+
 
 ### Types
 * `reg`
@@ -55,8 +74,10 @@ Report bugs to <janehacker1@gmail.com>
 * `skip`
   - do not generate labels for address BYTES
 
+
 ### Comments
 * Lines starting with a semi-colon (;) are ignored
+
 
 ## About
 This code was, let's be honest, hacked together simply to rip apart a binary and compare it to commented code (E931) and even produce a "usable" binary from it. Beyond that who knows how it may act.
