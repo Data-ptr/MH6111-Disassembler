@@ -1,5 +1,5 @@
 # MH6111 Disassembler
-Disassembler for the Mitsubishi MH6111/Toshiba TMS76C75T.
+Disassembler for the Mitsubishi MH6111/Toshiba TMP76C75T.
 
 ## Objectives
 - [x] Disassemble DSM ECU E931 binary that was assembled from the commented source
