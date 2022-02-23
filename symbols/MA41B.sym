@@ -1,0 +1,4 @@
+code	0000		epromStart
+data  70D5    dataStart
+org	FFAC
+vector	FFAC		intVector

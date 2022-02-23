@@ -72,7 +72,7 @@ Report bugs to <janehacker1@gmail.com>.
 * `org`
   - origin (location counter)
 * `skip`
-  - do not generate labels for address BYTES
+  - do not generate labels for operands at address BYTES
 
 
 ### Comments

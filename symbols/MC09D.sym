@@ -1,0 +1,4 @@
+data	0000		epromStart
+code  1000    codeStart
+org	FFAC
+vector	FFAC		intVector
