@@ -1,5 +1,5 @@
-# MH6111 Disassembler
-Disassembler for the Mitsubishi MH6X11/Toshiba TMS76XX.
+# MH6X11 Disassembler
+Disassembler for the Mitsubishi MH6X11/Toshiba TMP76XX.
 
 ## Objectives
 - [x] Disassemble DSM ECU E931 binary that was assembled from the commented source
@@ -7,7 +7,7 @@ Disassembler for the Mitsubishi MH6X11/Toshiba TMS76XX.
 - [x] Disasseble N/A ECU binary using symbol file by working through step by step against E931 commented source
 - [x] Make a bit perfect binary from the disassembly
 - [x] Disassemble MH6211 code
-- [x] Disassemble MH2311 code
+- [x] Disassemble MH6311 code
 
 
 ## Compile
